@@ -11,7 +11,7 @@ Install [Flutter](https://docs.flutter.dev/get-started/install).
 Make sure you are in the `rfid_project` directory.
 
 ```
-flutter build web --base-ref=/build/web
+flutter build web --base-ref=/build/web/
 ```
 
 ## Running
