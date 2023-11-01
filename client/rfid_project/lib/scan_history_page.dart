@@ -26,7 +26,7 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Product Page'),
+        title: Text('Scan History'),
         actions: <Widget>[
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -62,7 +62,7 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Product Page',
+              'Scan History Page',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -79,17 +79,7 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
                   ],
                   rows: [
                     DataRow(cells: [
-                      DataCell(
-                        Tooltip(
-                          message: 'Gate 1',
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Handle button click
-                            },
-                            child: Text('1'),
-                          ),
-                        ),
-                      ),
+                      DataCell(Text('1')),
                       DataCell(Text('234080941')),
                       DataCell(Text('Pencil Case')),
                       DataCell(Text('Incoming')),
