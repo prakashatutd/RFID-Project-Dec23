@@ -90,7 +90,6 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
                           ),
                         ),
                       ),
-                      DataCell(Text('Gate 1')),
                       DataCell(Text('234080941')),
                       DataCell(Text('Pencil Case')),
                       DataCell(Text('Incoming')),
