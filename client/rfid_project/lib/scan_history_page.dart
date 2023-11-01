@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TrendsPage extends StatefulWidget {
   @override
-  _TrendsPageState createState() => _TrendsPageState();
+  _ScanHistoryPageState createState() => _ScanHistoryPageState();
 }
 
 class ProductInfo {
@@ -21,7 +21,7 @@ class ProductInfo {
   });
 }
 
-class _TrendsPageState extends State<TrendsPage> {
+class _ScanHistoryPageState extends State<TrendsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
