@@ -1,4 +1,4 @@
-# rfid_project
+# rfid_dashboard
 
 A new Flutter project.
 

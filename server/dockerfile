@@ -2,8 +2,8 @@
 FROM python:3.11-slim
 
 # Set the working directory in the container
-WORKDIR /app
-COPY ./requirements.txt /app/requirements.txt
+WORKDIR /server
+COPY ./requirements.txt /server/requirements.txt
 
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
@@ -12,13 +12,15 @@ RUN pip install -r requirements.txt
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Container file structure:
-# app
-# ├── ics
-# └── dashboard
+# The container file structure mirrors the repo file structure:
+# server
+# ├─ ics
+# └─ dashboard
+#    └─ build
+#       └─ web
 
-COPY ./ics /app/ics
-COPY ./dashboard/build/web /app/dashboard
+COPY ./ics /server/ics
+COPY ./dashboard/build/web /server/dashboard/build/web
 
 # Expose the port the app runs on
 EXPOSE 8000

@@ -21,10 +21,10 @@ from django.views.static import serve
 from .settings import BASE_DIR
 
 SERVER_DIR = BASE_DIR.parent
-DASHBOARD_DIR = (SERVER_DIR / 'dashboard').resolve()
+DASHBOARD_DIR = (SERVER_DIR / 'dashboard/build/web').resolve()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard/', serve, { 'path' : 'index.html', 'document_root' : DASHBOARD_DIR }),
-    path('dashboard/<path>', serve, { 'document_root' : DASHBOARD_DIR })
+    path('', serve, { 'path' : 'index.html', 'document_root' : DASHBOARD_DIR }),
+    path('<path>/', serve, { 'document_root' : DASHBOARD_DIR })
 ]
