@@ -16,7 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.static import serve
+
+from .settings import BASE_DIR
+
+SERVER_DIR = BASE_DIR.parent
+DASHBOARD_DIR = (SERVER_DIR / 'dashboard').resolve()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard/', serve, { 'path' : 'index.html', 'document_root' : DASHBOARD_DIR }),
+    path('dashboard/<path>', serve, { 'document_root' : DASHBOARD_DIR })
 ]

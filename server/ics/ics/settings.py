@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-d28x2!@5lw_jsvqc)pxvx@$7-97$#_u96=!wxzbz1-c*!p3h$r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ ]
 
 
 # Application definition
@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'RFIDServer.urls'
+ROOT_URLCONF = 'ics.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'RFIDServer.wsgi.application'
+WSGI_APPLICATION = 'ics.wsgi.application'
 
 
 # Database
@@ -105,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
