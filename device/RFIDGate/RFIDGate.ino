@@ -2,30 +2,40 @@
   RFID Gate Firmware
 */
 
+#include <IPAddress.h>
+#include <WiFiS3.h>
+
 #include "SparkFun_UHF_RFID_Reader.h"
 #include "TagCache.h"
 
-#define DEBUG false
-
 #define EPC_OFFSET 31
 
+#define BUZZER1 9
+#define BUZZER2 10
+
+#define WRITE_COMMAND "write"
+#define SETPOWER_COMMAND "gain"
+#define DEBUG_COMMAND "debug"
+#define STATS_COMMAND "stats"
+
+// WiFi variables
+IPAddress serverIP(192, 168, 1, 133);
+WiFiClient wifiClient;
+
+// RFID variables
+bool debug = false;
 bool gateReading = false;
 TagCache<32> tagCache;
 RFID nano;
 
-char inputBuffer[24];
-
-// Establishes connection between Arduino and RFID module at specified baud rate
-// Returns true if connection established, false otherwise
+// Establish connection between Arduino and RFID module at specified baud rate
+// Return true if connection established, false otherwise
 bool setupNano(long baudRate)
 {
   // The Uno R4 WiFi has two serial ports:
   // 1) Serial is exposed via USB-C
   // 2) Serial1 is exposed via RX/TX pins (D0/D1)
   // We use Serial for debugging and Serial1 for Arduino <-> module communication
-
-  if (DEBUG)
-    nano.enableDebugging(Serial);
 
   nano.begin(Serial1);
   Serial1.begin(baudRate);
@@ -61,6 +71,30 @@ bool setupNano(long baudRate)
 
   nano.setTagProtocol(); // Set protocol to Gen2
   nano.setAntennaPort(); // Set TX/RX antenna ports to 1
+  nano.setRegion(REGION_NORTHAMERICA);
+  return true;
+}
+
+// Attempt to connect to local network
+bool connectWifi()
+{
+  if (WiFi.status() == WL_NO_MODULE)
+  {
+    Serial.println("Communication with WiFi module failed!");
+    return false;
+  }
+
+  int status = 0;
+
+  // Repeatedly try to connect until successful
+  while (status != WL_CONNECTED)
+  {
+    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.println(WIFI_SSID);
+    status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    delay(10000); // wait 10 seconds between retries
+  }
+
   return true;
 }
 
@@ -69,19 +103,21 @@ void setup()
   Serial.begin(115200);
   while (!Serial); // Wait for port to open
 
+  pinMode(BUZZER1, OUTPUT);
+  pinMode(BUZZER2, OUTPUT);
+  digitalWrite(BUZZER2, LOW);
+
   // Configure nano to run at 115200bps
-  if (setupNano(115200)) 
+  if (!setupNano(115200))
   {
-    Serial.println("Module connected!");
-    nano.setRegion(REGION_NORTHAMERICA);
-    nano.setReadPower(500);
-    startReading();
+    Serial.println("Module not connected!");
+    while (true);
   }
-  else
-  {
-    Serial.println(F("Module not connected!"));
-    while (1); // Freeze!
-  }
+
+  Serial.println("Module connected!");
+  nano.setReadPower(500);
+  Serial.println("Antenna gain set to 5.00 dBm");
+  startReading();
 }
 
 bool startReading()
@@ -100,52 +136,43 @@ bool stopReading()
   if (gateReading)
   {
     nano.stopReading();
-    delay(1700);
+    delay(1600);
     gateReading = false;
     return true;
   }
   return false;
 }
 
-bool writeTag(const String& data)
+// Write string to tag
+bool writeTag(const char* data)
 {
+  if (!data)
+    return false;
+
   char buffer[12] = { 0 };
-  char temp = 0;
-  size_t i;
 
-  for (i = 0; i < min(2 * sizeof(buffer), data.length()); ++i)
+  for (size_t i = 0; i < sizeof(buffer) * 2; ++i)
   {
-    char c = data[i];
-
-    // Get the corresponding hex value of c
+    char c = *data++;
     if (c >= '0' && c <= '9')
       c = c - '0';
     else if (c >= 'a' && c <= 'f')
       c = c - 'a' + 10;
     else if (c >= 'A' && c <= 'F')
       c = c - 'A' + 10;
+    else if (!c || c == ' ')
+      break;
     else
       return false;
 
     if (i % 2 == 0)
-      temp = c << 4;
+      buffer[i / 2] = c << 4;
     else
-      buffer[(i - 1) / 2] = temp + c;
+      buffer[(i - 1) / 2] += c;
   }
 
   bool wasReading = stopReading();
-  bool ret = false;
-
-  // Repeatedly try to write tag for five seconds
-  for (auto j = 0; i < 20; ++j)
-  {
-    if (nano.writeTagEPC(buffer, sizeof(buffer) == RESPONSE_SUCCESS))
-    {
-      ret = true;
-      break;
-    }
-    delay(250);
-  }
+  bool ret = nano.writeTagEPC(buffer, sizeof(buffer), 5000) == RESPONSE_SUCCESS;
 
   if (wasReading)
     startReading();
@@ -153,90 +180,116 @@ bool writeTag(const String& data)
   return ret;
 }
 
-bool setReadPower(long powerSetting)
-{
-  if (powerSetting < 100 || powerSetting > 2700)
-    return false;
+const char* skipWhitespace(const char* str) {
+  if (!str)
+    return str;
   
-  nano.setReadPower(powerSetting);
-  return true;
+  while (*str && *str == ' ')
+    ++str;
+    
+  return str;
 }
 
-size_t readLine(char* buffer, size_t length)
-{
-  char c = 0;
-
-  for (size_t i = 0; i < length; ++i)
-  {
-    c = Serial.read();
-    if (c == -1 || c == '\n')
-      return i;
-    buffer[i] = c;
-  }
-
-  while (c != -1 && c != '\n')
-    c = Serial.read();
-
-  return length;
-}
+// Essentially only four commands:
+// - write [tag data]
+// - setpower [num]
+// - stats (temperature, power, etc)
+// - debug
 
 void loop()
 {
+  static char inputBuffer[33];
+
   if (Serial.available())
   {
-    String line = Serial.readStringUntil('\n');
+    size_t readCount = Serial.readBytesUntil('\n', inputBuffer, sizeof(inputBuffer) - 1);
 
-    if (line.startsWith("idle"))
+    // Add null terminator
+    inputBuffer[readCount] = 0;
+
+    // Flush input buffer until next newline
+    if (readCount == sizeof(inputBuffer) - 1)
     {
-      if (stopReading())
-        Serial.println("Device entered idle mode");
+      char c;
+      do
+        c = Serial.read();
+      while (c != -1 && c != '\n');
     }
-    else if (line.startsWith("scan"))
+
+    Serial.println(inputBuffer);
+
+    if (!strncmp(inputBuffer, WRITE_COMMAND, sizeof(WRITE_COMMAND) - 1))
     {
-      if (startReading())
-        Serial.println("Device entered continuous scan mode");
-    }
-    else if (line.startsWith("write"))
-    {
-      line.remove(0, sizeof("write"));
-      line.trim();
-      Serial.print("Writing to tag ... ");
-      if (writeTag(line))
-        Serial.println("Success!");
+      const char* tagData = skipWhitespace(inputBuffer + sizeof(WRITE_COMMAND) - 1);
+      if (writeTag(tagData))
+        Serial.println("Successfully wrote to tag!");
       else
-        Serial.println("Write failed!");
+        Serial.println("Error writing to tag!");
     }
-    else if (line.startsWith("power"))
+    else if (!strncmp(inputBuffer, SETPOWER_COMMAND, sizeof(SETPOWER_COMMAND) - 1))
     {
-      line.remove(0, sizeof("power"));
-      line.trim();
-      long powerSetting = line.toInt();
+      char* end;
+      const long gain = strtol(inputBuffer + sizeof(SETPOWER_COMMAND), &end, 10);
 
-      if (setReadPower(powerSetting))
+      if (end == inputBuffer)
+        Serial.println("Invalid gain value!");
+
+      if (gain == 0)
+        stopReading();
+      else if (gain > 0 || gain <= 2700)
       {
-        Serial.print("Antenna power set to ");
-        Serial.print((float)powerSetting / 100);
-        Serial.println(" dBm");
+        bool wasReading = stopReading();
+        nano.setReadPower(gain);
+        nano.setWritePower(gain);
+
+        if (wasReading)
+          startReading();
       }
       else
-        Serial.println("Invalid antenna power setting; must be in range [100, 2700]");
+        Serial.println("Gain value must be in range [0, 2700]");
+
+      Serial.print("Antenna gain set to ");
+      Serial.print((float)gain / 100);
+      Serial.println(" dBm");
+    }
+    else if (!strncmp(inputBuffer, DEBUG_COMMAND, sizeof(DEBUG_COMMAND) - 1))
+    {
+      if (debug)
+      {
+        nano.disableDebugging();
+        debug = false;
+        Serial.println("Debug mode disabled!");
+      }
+      else
+      {
+        nano.enableDebugging();
+        debug = true;
+        Serial.println("Debug mode enabled!");
+      }
+    }
+    else if (!strncmp(inputBuffer, STATS_COMMAND, sizeof(STATS_COMMAND) - 1))
+    {
+      /*Serial.println("RFID module stats:");
+      Serial.print("Antenna gain: ");
+      Serial.println("PLACEHOODER");
+      Serial.print("Temperature: ");*/
+      // print stats
+      Serial.println("<stats placeholder>");
     }
     else
-      Serial.println("Unknown command");
+      Serial.println("Unknown command!");
   }
 
-  if (!gateReading)
-    return;
-
-  if (nano.check())
+  if (gateReading && nano.check())
   {
     uint8_t responseType = nano.parseResponse();
 
     if (responseType == RESPONSE_IS_TAGFOUND)
     {
       uint8_t epcLength = nano.getTagEPCBytes();
-      if (tagCache.insert(nano.msg + EPC_OFFSET, epcLength))
+      if (tagCache.insert(nano.msg + EPC_OFFSET, epcLength, 3000))
       {
+        tone(BUZZER1, 1800, 100);
         Serial.print("Tag data: ");
         for (size_t i = EPC_OFFSET; i < EPC_OFFSET + epcLength; ++i)
           Serial.print(nano.msg[i], HEX);
