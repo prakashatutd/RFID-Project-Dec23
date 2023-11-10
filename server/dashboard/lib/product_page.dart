@@ -22,6 +22,59 @@ class ProductInfo {
 }
 
 class _ProductPageState extends State<ProductPage> {
+  // Mock data for demonstration purposes
+  List<ProductInfo> products = [
+    ProductInfo(id: '1', name: 'Product 1', imageUrl: '', dimensions: '', description: ''),
+    // ... other products
+  ];
+
+  // Function to edit table data
+  void _editTableData() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Table Data'),
+          content: Column(
+            children: products.map((product) {
+              // Create text editing controllers for each field
+              TextEditingController idController = TextEditingController(text: product.id);
+              TextEditingController nameController = TextEditingController(text: product.name);
+              TextEditingController imageUrlController = TextEditingController(text: product.imageUrl);
+              TextEditingController dimensionsController = TextEditingController(text: product.dimensions);
+              TextEditingController descriptionController = TextEditingController(text: product.description);
+
+              return Column(
+                children: [
+                  // Text field for Product ID
+                  TextField(controller: idController, decoration: InputDecoration(labelText: 'Product ID')),
+                  // Text field for Product Name
+                  TextField(controller: nameController, decoration: InputDecoration(labelText: 'Product Name')),
+                  // Text field for Image URL
+                  TextField(controller: imageUrlController, decoration: InputDecoration(labelText: 'Image URL')),
+                  // Text field for Dimensions
+                  TextField(controller: dimensionsController, decoration: InputDecoration(labelText: 'Dimensions')),
+                  // Text field for Description
+                  TextField(controller: descriptionController, decoration: InputDecoration(labelText: 'Description')),
+                  SizedBox(height: 20),
+                ],
+              );
+            }).toList(),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                // Handle save/edit logic here
+                Navigator.pop(context);
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,15 +82,15 @@ class _ProductPageState extends State<ProductPage> {
         title: Text('Product Page'),
         actions: <Widget>[
           PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'product') {
-                // Handle Product Page option
-              } else if (value == 'history') {
-                // Handle Scan History option
-              } else if (value == 'trends') {
-                // Handle Trends option
-              } else if (value == 'orders') {
-                // Handle Orders Page option
+             onSelected: (value) {
+              if (value == 'Product Page') {
+                Navigator.pushNamed(context, '/product');
+              } else if (value == 'Scan History') {
+                Navigator.pushNamed(context, '/ScanHistory');
+              } else if (value == 'Trends') {
+                Navigator.pushNamed(context, '/trends');
+              } else if (value == 'Orders Page') {
+                Navigator.pushNamed(context, '/orders');
               }
             },
             itemBuilder: (BuildContext context) {
@@ -66,38 +119,30 @@ class _ProductPageState extends State<ProductPage> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: [
-                    DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Product Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Min Storage Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Current Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                  ],
-                  rows: [
-                    DataRow(cells: [
-                      DataCell(
-                        Tooltip(
-                          message: 'Product 1 Details',
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Handle button click
-                            },
-                            child: Text('1'),
-                          ),
-                        ),
-                      ),
-                      DataCell(Text('Product 1')),
-                      DataCell(Text('10')),
-                      DataCell(Text('5')),
-                      DataCell(Text('15')),
-                    ]),
-                    // ... other rows
-                  ],
-                ),
+            ElevatedButton(
+              onPressed: _editTableData,
+              child: Text('Edit Table Data'),
+            ),
+            SizedBox(height: 20),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: [
+                  DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Product Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Min Storage Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Current Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+                rows: products.map((product) {
+                  return DataRow(cells: [
+                    DataCell(Text(product.id)),
+                    DataCell(Text(product.name)),
+                    DataCell(Text(product.imageUrl)),
+                    DataCell(Text(product.dimensions)),
+                    DataCell(Text(product.description)),
+                  ]);
+                }).toList(),
               ),
             ),
           ],
