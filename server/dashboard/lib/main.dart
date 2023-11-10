@@ -70,6 +70,7 @@ void main() {
         debugShowCheckedModeBanner: false,
         home: ProductPage(),
         routes: {
+          '/product': (context) => ProductPage(),
           '/trends': (context) => TrendsPage(),
           '/orders': (context) => OrdersPage(),
           '/ScanHistory': (context) => ScanHistoryPage(),
