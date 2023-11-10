@@ -18,8 +18,6 @@ class Product(models.Model):
     min_quantity = models.PositiveIntegerField()
     max_quantity = models.PositiveIntegerField()
 
-    last_update_time = models.DateTimeField()
-
 # Enum representing action taken on product scan
 # See https://docs.djangoproject.com/en/4.2/ref/models/fields/#enumeration-types
 class ScanAction(models.IntegerChoices):
@@ -37,21 +35,23 @@ class RFIDGate(models.Model):
                                       verbose_name="Action taken on scanned products")
 
     # Time when most recent connection with gate was established
-    last_connection_time = models.DateTimeField()
+    last_connection_time = models.DateTimeField(null=True, blank=True, default=None)
 
 class ScanEvent(models.Model):
     product_id = models.ForeignKey(Product,
                                    null=True,
+                                   blank=True,
                                    on_delete=models.SET_NULL,
                                    verbose_name="ID of scanned product")
     
     gate_internal_id = models.ForeignKey(RFIDGate,
                                          null=True,
+                                         blank=True,
                                          on_delete=models.SET_NULL,
                                          verbose_name="Internal ID of gate that scanned product")
     
     action = models.IntegerField(choices=ScanAction.choices,
-                                      verbose_name="Action taken when product was scanned")
+                                 verbose_name="Action taken when product was scanned")
     
     quantity = models.PositiveIntegerField(verbose_name="Number of instances of product scanned")    
     time = models.DateTimeField(verbose_name="Time at which product was scanned")
