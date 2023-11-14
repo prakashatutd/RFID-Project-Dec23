@@ -7,6 +7,12 @@ This directory contains the source code for the inventory control system (ICS) b
 - Install [Docker](https://docs.docker.com/get-docker/)
 - Install [Flutter](https://docs.flutter.dev/get-started/install)
 
+Install required Python packages via:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
 ## Build web dashboard
 
 In the `dashboard` directory, run
@@ -19,7 +25,7 @@ flutter build web
 
 For testing purposes, you can run the server locally without building a Docker container. To do so, navigate to the `ics` directory and run:
 
-```
+```bash
 python manage.py runserver 0.0.0.0:8000
 ```
 
