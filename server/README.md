@@ -1,11 +1,11 @@
 # Inventory Control System
 
-This directory contains the source code for the inventory control system (ICS) backed and web dashboard.
+This directory contains the source code for the inventory control system (ICS) back-end and web dashboard.
 
 ## Prerequisites
 
-- Install [Docker](https://docs.docker.com/get-docker/)
-- Install [Flutter](https://docs.flutter.dev/get-started/install)
+- Install [Flutter](https://docs.flutter.dev/get-started/install) for the web dashboard front-end
+- Install [Docker](https://docs.docker.com/get-docker/) to run the server in a container (optional)
 
 Install required Python packages via:
 
@@ -13,29 +13,33 @@ Install required Python packages via:
 python -m pip install -r requirements.txt
 ```
 
-## Build web dashboard
+## Build and run locally
 
-In the `dashboard` directory, run
+Simply run the `run.sh` (Mac and Unix-like systems) or `run.cmd` (Windows) script in your terminal to build the web dashboard and run the server locally.
+
+You can also manually build the dashboard:
 
 ```bash
+# Working directory should be server/dashboard
 flutter build web
 ```
 
-## Run server locally
+. . . and manually start the server:
 
-For testing purposes, you can run the server locally without building a Docker container. To do so, navigate to the `ics` directory and run:
 
 ```bash
-python manage.py runserver 0.0.0.0:8000
+# Working directory should be server
+python ics/manage.py runserver 0.0.0.0:8000
 ```
 
-Open 127.0.0.1:8000 in a browser to access the web dashboard. Use Ctrl-C to stop the server.
+Open 127.0.0.1:8000 in a browser to access the dashboard. Use Ctrl-C to stop the server.
 
 ## Build server container image
 
-Ensure that Docker Desktop is running. In the `server` directory, run
+We will deploy our server application in a Docker container. To build the container, first ensure that Docker Desktop is running then run:
 
 ```bash
+# Working directory should be server
 docker build -t rfidserver .
 ```
 
@@ -54,7 +58,7 @@ The container will run in the background. Open 127.0.0.1:8000 in a browser to ac
 
 ## List containers
 
-Use `docker container ls -a` to view a list of containers.
+Use `docker container ls -a` to view a list of containers:
 
 ```
 CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS    PORTS     NAMES
