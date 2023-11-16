@@ -5,34 +5,47 @@ class ProductPage extends StatefulWidget {
   _ProductPageState createState() => _ProductPageState();
 }
 
-class ProductInfo {
-  final String id;
+// Basic product info shown on inventory page
+class ProductBasicInfo {
+  final int id;
   final String name;
-  final String imageUrl;
-  final String dimensions;
-  final String description;
+  final String category;
+  final int resupplyThreshold;
+  int quantity;
 
-  ProductInfo({
-    required this.id,
-    required this.name,
-    required this.imageUrl,
-    required this.dimensions,
-    required this.description,
-  });
+  ProductBasicInfo(this.id, this.name, this.category, this.resupplyThreshold, this.quantity) {
+
+  }
+}
+
+// Additional product info that is shown in sidebar
+class ProductDetailedInfo {
+  final String imageUrl;
+  final String description;
+  final int width;
+  final int height;
+  final int depth;
+  final int weight;
+
+  ProductDetailedInfo(this.imageUrl, this.description, this.width, this.height, this.depth, this.weight) {
+
+  }
 }
 
 class _ProductPageState extends State<ProductPage> {
   // Mock data for demonstration purposes
-  List<ProductInfo> products = [
-    ProductInfo(id: '1', name: 'Product 1', imageUrl: '', dimensions: '', description: 'Description for Product 1'),
-    // ... other products
-  ];
+  Map<int, ProductBasicInfo> basicProducts = {
+    111222333 : ProductBasicInfo(111222333, 'BIC Soft Feel Ballpoint Pen 25ct', 'Pens', 25, 40),
+    777555444 : ProductBasicInfo(777555444, 'X-ACTO Quiet Pro 35ct', 'Pencil Sharpeners', 5, 2),
+    444999000 : ProductBasicInfo(444999000, 'Crayola Washable Markers 100ct', 'Markers', 15, 30),
+  };
+  Map<int, ProductDetailedInfo> detailedProducts = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Product Page'),
+        title: Text('Inventory'),
         actions: <Widget>[
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -68,7 +81,7 @@ class _ProductPageState extends State<ProductPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Product Page',
+              'Inventory',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -80,27 +93,28 @@ class _ProductPageState extends State<ProductPage> {
                     child: DataTable(
                       columns: [
                         DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Product Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Min Storage Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
                         DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Current Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
                       ],
-                      rows: products.map((product) {
-                        return DataRow(cells: [
-                          DataCell(
-                            Text(
-                              product.id,
-                              style: TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline,
+                      rows: basicProducts.values.map((basicProduct) {
+                        return DataRow(
+                          cells: [
+                            DataCell(
+                              Text(
+                                basicProduct.id.toString(),
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(product.name)),
-                          DataCell(Text(product.imageUrl)),
-                          DataCell(Text(product.dimensions)),
-                          DataCell(Text(product.description)),
-                        ]);
+                            DataCell(Text(basicProduct.name)),
+                            DataCell(Text(basicProduct.category)),
+                            DataCell(Text(basicProduct.resupplyThreshold.toString())),
+                            DataCell(Text(basicProduct.quantity.toString())),
+                          ]);
                       }).toList(),
                     ),
                   ),
@@ -121,7 +135,7 @@ class _ProductPageState extends State<ProductPage> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Description for Product 1',
+                        'Defintely one of the products of all time!',
                       ),
                     ],
                   ),
