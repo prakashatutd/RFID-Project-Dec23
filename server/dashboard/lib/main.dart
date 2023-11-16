@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-import 'product_page.dart';
+import 'inventory_page.dart';
 import 'trends_page.dart';
 import 'orders_page.dart';
 import 'scan_history_page.dart';
@@ -68,9 +68,9 @@ void main() {
       create: (context) => InventoryProvider(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: ProductPage(),
+        home: InventoryPage(),
         routes: {
-          '/product': (context) => ProductPage(),
+          '/inventory': (context) => InventoryPage(),
           '/trends': (context) => TrendsPage(),
           '/orders': (context) => OrdersPage(),
           '/ScanHistory': (context) => ScanHistoryPage(),

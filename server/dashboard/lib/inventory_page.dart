@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class ProductPage extends StatefulWidget {
+class InventoryPage extends StatefulWidget {
   @override
-  _ProductPageState createState() => _ProductPageState();
+  _InventoryPageState createState() => _InventoryPageState();
 }
 
 // Basic product info shown on inventory page
@@ -14,7 +14,6 @@ class ProductBasicInfo {
   int quantity;
 
   ProductBasicInfo(this.id, this.name, this.category, this.resupplyThreshold, this.quantity) {
-
   }
 }
 
@@ -28,11 +27,10 @@ class ProductDetailedInfo {
   final int weight;
 
   ProductDetailedInfo(this.imageUrl, this.description, this.width, this.height, this.depth, this.weight) {
-
   }
 }
 
-class _ProductPageState extends State<ProductPage> {
+class _InventoryPageState extends State<InventoryPage> {
   // Mock data for demonstration purposes
   Map<int, ProductBasicInfo> basicProducts = {
     111222333 : ProductBasicInfo(111222333, 'BIC Soft Feel Ballpoint Pen 25ct', 'Pens', 25, 40),
@@ -49,8 +47,8 @@ class _ProductPageState extends State<ProductPage> {
         actions: <Widget>[
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'Product Page') {
-                Navigator.pushNamed(context, '/product');
+              if (value == 'Inventory') {
+                Navigator.pushNamed(context, '/inventory');
               } else if (value == 'Scan History') {
                 Navigator.pushNamed(context, '/ScanHistory');
               } else if (value == 'Trends') {
@@ -61,7 +59,7 @@ class _ProductPageState extends State<ProductPage> {
             },
             itemBuilder: (BuildContext context) {
               return {
-                'Product Page',
+                'Inventory',
                 'Scan History',
                 'Trends',
                 'Orders Page',
