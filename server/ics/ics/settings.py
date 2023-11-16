@@ -31,6 +31,7 @@ ALLOWED_HOSTS = [ ]
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -125,3 +126,5 @@ MEDIA_URL = MEDIA_ROOT
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ASGI_APPLICATION = "ics.asgi.application"
