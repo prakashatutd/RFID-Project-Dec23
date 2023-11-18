@@ -1,62 +1,64 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 import 'inventory_page.dart';
 import 'trends_page.dart';
 import 'orders_page.dart';
 import 'scan_history_page.dart';
 
-
-class InventoryItem {
-  final String id;
+class _DashboardPageInfo {
   final String name;
+  final Icon icon;
+  final Widget page;
 
-  InventoryItem({required this.id, required this.name});
+  const _DashboardPageInfo(this.name, this.icon, this.page);
 }
 
-class InventoryProvider extends ChangeNotifier {
-  List<InventoryItem> _items = [];
+class Dashboard extends StatefulWidget {
+  const Dashboard({super.key});
 
-  List<InventoryItem> get items => _items;
-
-  Future<void> fetchInventoryItems() async {
-    try {
-      final response = await http.get(Uri.parse('YOUR_API_ENDPOINT_HERE'));
-
-      if (response.statusCode == 200) {
-        // If the server returns a 200 OK response, parse the JSON
-        // Assume the JSON response is an array of objects with 'id' and 'name' properties
-        List<dynamic> data = json.decode(response.body);
-        _items = data.map((item) => InventoryItem(id: item['id'], name: item['name'])).toList();
-        notifyListeners(); // Call notifyListeners() to update the UI
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (error) {
-      throw Exception('Error: $error');
-    }
-  }
+  @override
+  State<Dashboard> createState() => _DashboardState();
 }
 
-class InventoryScreen extends StatelessWidget {
-  const InventoryScreen({super.key});
+class _DashboardState extends State<Dashboard> {
+  static const List<_DashboardPageInfo> _pages = <_DashboardPageInfo>[
+    _DashboardPageInfo('Inventory', Icon(Icons.list), const InventoryPage()),
+    _DashboardPageInfo('History', Icon(Icons.history), const ScanHistoryPage()),
+    _DashboardPageInfo('Trends', Icon(Icons.timeline), const TrendsPage()),
+    _DashboardPageInfo('Orders', Icon(Icons.local_shipping), const OrdersPage()),
+  ];
+  int _pageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    var inventoryProvider = Provider.of<InventoryProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory Management'),
+        title: Text(_pages[_pageIndex].name),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            inventoryProvider.fetchInventoryItems();
-          },
-          child: const Text('Fetch Inventory Items'),
-        ),
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          NavigationRail(
+            selectedIndex: _pageIndex,
+            labelType: NavigationRailLabelType.all,
+            destinations: _pages.map(
+              (_DashboardPageInfo pageInfo) {
+                return NavigationRailDestination(
+                  label: Text(pageInfo.name),
+                  icon: pageInfo.icon,
+                );
+              }
+            ).toList(),
+            onDestinationSelected: (int index) {
+              setState(() {
+                _pageIndex = index;
+              });
+            },
+          ),
+          Expanded(
+            child: _pages[_pageIndex].page,
+          ),
+        ]
       ),
     );
   }
@@ -64,18 +66,10 @@ class InventoryScreen extends StatelessWidget {
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => InventoryProvider(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: InventoryPage(),
-        routes: {
-          '/inventory': (context) => InventoryPage(),
-          '/trends': (context) => TrendsPage(),
-          '/orders': (context) => OrdersPage(),
-          '/ScanHistory': (context) => ScanHistoryPage(),
-        },
-      ),
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: false),
+      home: const Dashboard(),
     ),
   );
 }

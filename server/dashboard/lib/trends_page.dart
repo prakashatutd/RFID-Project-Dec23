@@ -2,47 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class TrendsPage extends StatelessWidget {
+  const TrendsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Trends'),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'product') {
-                // Handle Product Page option
-              } else if (value == 'history') {
-                // Handle Scan History option
-              } else if (value == 'trends') {
-                // Handle Trends option
-              } else if (value == 'orders') {
-                // Handle Orders Page option
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return {
-                'Product Page',
-                'Scan History',
-                'Trends',
-                'Orders Page',
-              }.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-        padding: const EdgeInsets.all(10),
-        width: 1500,
-        height: 500,
-        child: LineChart(
-          LineChartData(borderData: FlBorderData(show: false), lineBarsData: [
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: LineChart(
+        LineChartData(
+          borderData: FlBorderData(show: false), 
+          lineBarsData: [
             LineChartBarData(spots: [
               const FlSpot(0, 1),
               const FlSpot(1, 3),
@@ -63,8 +32,7 @@ class TrendsPage extends StatelessWidget {
               const FlSpot(5, 5),
               const FlSpot(10, 1)
             ], color: Colors.green),
-          ]),
-        ),
+          ]
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class InventoryPage extends StatefulWidget {
+  const InventoryPage({super.key});
+
   @override
   _InventoryPageState createState() => _InventoryPageState();
 }
@@ -13,7 +15,12 @@ class ProductBasicInfo {
   final int resupplyThreshold;
   int quantity;
 
-  ProductBasicInfo(this.id, this.name, this.category, this.resupplyThreshold, this.quantity) {
+  ProductBasicInfo(
+    this.id,
+    this.name,
+    this.category,
+    this.resupplyThreshold,
+    this.quantity) {
   }
 }
 
@@ -26,7 +33,13 @@ class ProductDetailedInfo {
   final int depth;
   final int weight;
 
-  ProductDetailedInfo(this.imageUrl, this.description, this.width, this.height, this.depth, this.weight) {
+  ProductDetailedInfo(
+    this.imageUrl,
+    this.description,
+    this.width,
+    this.height,
+    this.depth,
+    this.weight) {
   }
 }
 
@@ -41,107 +54,64 @@ class _InventoryPageState extends State<InventoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Inventory'),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'Inventory') {
-                Navigator.pushNamed(context, '/inventory');
-              } else if (value == 'Scan History') {
-                Navigator.pushNamed(context, '/ScanHistory');
-              } else if (value == 'Trends') {
-                Navigator.pushNamed(context, '/trends');
-              } else if (value == 'Orders Page') {
-                Navigator.pushNamed(context, '/orders');
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return {
-                'Inventory',
-                'Scan History',
-                'Trends',
-                'Orders Page',
-              }.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Inventory',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: SingleChildScrollView(
+              child: DataTable(
+                columns: [
+                  DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+                rows: basicProducts.values.map((basicProduct) {
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        Text(
+                          basicProduct.id.toString(),
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      DataCell(Text(basicProduct.name)),
+                      DataCell(Text(basicProduct.category)),
+                      DataCell(Text(basicProduct.resupplyThreshold.toString())),
+                      DataCell(Text(basicProduct.quantity.toString())),
+                    ]);
+                }).toList(),
+              ),
             ),
-            SizedBox(height: 20),
-            Row(
+          ),
+          Container(
+            width: 200,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            padding: EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: [
-                        DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                      ],
-                      rows: basicProducts.values.map((basicProduct) {
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Text(
-                                basicProduct.id.toString(),
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                            DataCell(Text(basicProduct.name)),
-                            DataCell(Text(basicProduct.category)),
-                            DataCell(Text(basicProduct.resupplyThreshold.toString())),
-                            DataCell(Text(basicProduct.quantity.toString())),
-                          ]);
-                      }).toList(),
-                    ),
-                  ),
+                Text(
+                  'Product Description',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Container(
-                  width: 200,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  padding: EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Product Description',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Defintely one of the products of all time!',
-                      ),
-                    ],
-                  ),
+                SizedBox(height: 8),
+                Text(
+                  'Defintely one of the products of all time!',
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
