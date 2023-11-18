@@ -26,6 +26,7 @@ class _DashboardState extends State<Dashboard> {
     _DashboardPageInfo('History', Icon(Icons.history), const ScanHistoryPage()),
     _DashboardPageInfo('Trends', Icon(Icons.timeline), const TrendsPage()),
     _DashboardPageInfo('Orders', Icon(Icons.local_shipping), const OrdersPage()),
+    _DashboardPageInfo('Gates', Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
   ];
   int _pageIndex = 0;
 
