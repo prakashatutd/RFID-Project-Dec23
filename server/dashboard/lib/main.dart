@@ -5,13 +5,39 @@ import 'trends_page.dart';
 import 'orders_page.dart';
 import 'scan_history_page.dart';
 
-class _DashboardPageInfo {
+class _DashboardPage {
   final String name;
   final Icon icon;
-  final Widget page;
+  final Widget content;
 
-  const _DashboardPageInfo(this.name, this.icon, this.page);
+  const _DashboardPage(this.name, this.icon, this.content);
 }
+
+const List<_DashboardPage> _dashboardPages = <_DashboardPage>[
+  _DashboardPage('Inventory', Icon(Icons.list), const InventoryPage()),
+  _DashboardPage('History', Icon(Icons.history), const ScanHistoryPage()),
+  _DashboardPage('Trends', Icon(Icons.timeline), const TrendsPage()),
+  _DashboardPage('Orders', Icon(Icons.local_shipping), const OrdersPage()),
+  _DashboardPage('Gates', Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
+];
+
+final List<NavigationDrawerDestination> _navigationDrawerDestinations = _dashboardPages.map(
+  (_DashboardPage page) {
+    return NavigationDrawerDestination(
+      label: Text(page.name),
+      icon: page.icon,
+    );
+  }
+).toList();
+
+final List<NavigationRailDestination> _navigationRailDestinations = _dashboardPages.map(
+  (_DashboardPage page) {
+    return NavigationRailDestination(
+      label: Text(page.name),
+      icon: page.icon,
+    );
+  }
+).toList();
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -21,47 +47,63 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  static const List<_DashboardPageInfo> _pages = <_DashboardPageInfo>[
-    _DashboardPageInfo('Inventory', Icon(Icons.list), const InventoryPage()),
-    _DashboardPageInfo('History', Icon(Icons.history), const ScanHistoryPage()),
-    _DashboardPageInfo('Trends', Icon(Icons.timeline), const TrendsPage()),
-    _DashboardPageInfo('Orders', Icon(Icons.local_shipping), const OrdersPage()),
-    _DashboardPageInfo('Gates', Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
-  ];
   int _pageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    bool mobileMode = MediaQuery.of(context).size.width < 640;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pages[_pageIndex].name),
+        title: Text(_dashboardPages[_pageIndex].name),
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          NavigationRail(
-            selectedIndex: _pageIndex,
-            labelType: NavigationRailLabelType.all,
-            destinations: _pages.map(
-              (_DashboardPageInfo pageInfo) {
-                return NavigationRailDestination(
-                  label: Text(pageInfo.name),
-                  icon: pageInfo.icon,
-                );
-              }
-            ).toList(),
-            onDestinationSelected: (int index) {
-              setState(() {
-                _pageIndex = index;
-              });
-            },
-          ),
-          Expanded(
-            child: _pages[_pageIndex].page,
-          ),
-        ]
-      ),
+      body: mobileMode ? _buildMobileBody() : _buildDesktopBody(),
+      drawer: mobileMode ? _buildDrawer() : null,
     );
+  }
+
+  Widget _buildMobileBody()
+  {
+    return _buildBodyContent();
+  }
+
+  Widget _buildDesktopBody()
+  {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        NavigationRail(
+          selectedIndex: _pageIndex,
+          labelType: NavigationRailLabelType.all,
+          destinations: _navigationRailDestinations,
+          onDestinationSelected: _onDestinationSelected,
+        ),
+        Expanded(
+          child: _buildBodyContent(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBodyContent() {
+    return _dashboardPages[_pageIndex].content;
+  }
+
+  Widget _buildDrawer() {
+    return NavigationDrawer(
+      selectedIndex: _pageIndex,
+      children: _navigationDrawerDestinations,
+      onDestinationSelected: _onDestinationSelected,
+    );
+  }
+
+  void _onDestinationSelected(int index) {
+    if (index == _pageIndex)
+      return;
+
+    setState(() {
+      _pageIndex = index;
+    });
   }
 }
 
