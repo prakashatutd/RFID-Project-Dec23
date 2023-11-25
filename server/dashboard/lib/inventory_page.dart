@@ -91,18 +91,36 @@ class _InventoryPageState extends State<InventoryPage> {
       padding: const EdgeInsets.all(16.0),      
       child: PaginatedDataTable2(
         availableRowsPerPage: <int>[10, 20, 30],
+        headingTextStyle: TextStyle(fontWeight: FontWeight.bold),
         rowsPerPage: _rowsPerPage,
         onRowsPerPageChanged: (int? value) {
           _rowsPerPage = value!;
         },
         showFirstLastButtons: true,
         source: inventoryDataSource,
-        columns: const <DataColumn>[
-          DataColumn(label: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Resupply Threshold', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+        columns: const <DataColumn2>[
+          DataColumn2(
+            label: Text('Product ID'),
+            size: ColumnSize.S,
+          ),
+          DataColumn2(
+            label: Text('Name'),
+            size: ColumnSize.L,
+          ),
+          DataColumn2(
+            label: Text('Category'),
+            size: ColumnSize.M,
+          ),
+          DataColumn2(
+            label: Text('Resupply Threshold'),
+            size: ColumnSize.S,
+            numeric: true,
+          ),
+          DataColumn2(
+            label: Text('Quantity'),
+            size: ColumnSize.S,
+            numeric: true,
+          ),
         ],
       ),
     );
