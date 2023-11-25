@@ -18,7 +18,7 @@ class ProductBasicInfo {
   }
 }
 
-// Additional product info that is shown in sidebar
+// Additional product info that is shown in pop-up
 class ProductDetailedInfo {
   final String imageUrl;
   final String description;
@@ -38,7 +38,7 @@ class ProductDetailedInfo {
 }
 
 class InventoryDataSource extends DataTableSource {
-  final List<ProductBasicInfo> products = <ProductBasicInfo>[
+  final List<ProductBasicInfo> _products = <ProductBasicInfo>[
     ProductBasicInfo(111222333, 'BIC Soft Feel Ballpoint Pen 25ct', 'Pens', 25, 40),
     ProductBasicInfo(777555444, 'X-ACTO Quiet Pro 35ct', 'Pencil Sharpeners', 5, 2),
     ProductBasicInfo(444999000, 'Crayola Washable Markers 100ct', 'Markers', 15, 30),
@@ -46,7 +46,7 @@ class InventoryDataSource extends DataTableSource {
   ];
 
   @override
-  int get rowCount => products.length;
+  int get rowCount => _products.length;
 
   @override
   bool get isRowCountApproximate => false;
@@ -59,7 +59,7 @@ class InventoryDataSource extends DataTableSource {
     if (index < 0 || index > rowCount)
       return null;
 
-    final ProductBasicInfo product = products[index];
+    final ProductBasicInfo product = _products[index];
 
     return DataRow(
       cells: <DataCell>[
@@ -73,7 +73,7 @@ class InventoryDataSource extends DataTableSource {
   }
 }
 
-final InventoryDataSource inventoryDataSource = InventoryDataSource();
+final InventoryDataSource _inventoryDataSource = InventoryDataSource();
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -97,7 +97,7 @@ class _InventoryPageState extends State<InventoryPage> {
           _rowsPerPage = value!;
         },
         showFirstLastButtons: true,
-        source: inventoryDataSource,
+        source: _inventoryDataSource,
         columns: const <DataColumn2>[
           DataColumn2(
             label: Text('Product ID'),
