@@ -33,6 +33,8 @@ ALLOWED_HOSTS = [ ]
 INSTALLED_APPS = [
     'daphne',
     'dashboard.apps.DashboardConfig',
+    'rest_framework',
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -128,3 +130,8 @@ MEDIA_URL = MEDIA_ROOT
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ASGI_APPLICATION = "ics.asgi.application"
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}

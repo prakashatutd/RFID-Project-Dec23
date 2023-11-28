@@ -7,23 +7,31 @@ def product_image_path(instance, filename):
 class Product(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=500)
     category = models.CharField(max_length=100)
+    rop = models.PositiveIntegerField(verbose_name='Reorder point', default=0)
+    quantity = models.PositiveIntegerField(default=0)
+
+    # Detailed product information
+    description = models.CharField(max_length=500,
+                                   null=True,
+                                   blank=True,
+                                   default=None)
+
     image = models.ImageField(null=True,
                               blank=True,
                               default=None,
                               upload_to=product_image_path)
     
     # Assumption is that product dimensions are rounded up to nearest cm
-    height = models.PositiveIntegerField(verbose_name='Product height in cm')
-    width = models.PositiveIntegerField(verbose_name='Product width in cm')
-    depth = models.PositiveIntegerField(verbose_name='Product depth in cm')
-    weight = models.DecimalField(max_digits=5,
+    height = models.PositiveIntegerField(verbose_name='Height in cm')
+    width = models.PositiveIntegerField(verbose_name='Width in cm')
+    depth = models.PositiveIntegerField(verbose_name='Depth in cm')
+    weight = models.DecimalField(max_digits=6,
                                  decimal_places=3,
-                                 verbose_name='Product weight in kg')
-
-    min_quantity = models.PositiveIntegerField()
-    max_quantity = models.PositiveIntegerField()
+                                 verbose_name='Weight in kg')
+    
+    def needs_resupply(self):
+        return self.quantity < self.rop
 
 # Enum representing action taken on product scan
 # See https://docs.djangoproject.com/en/4.2/ref/models/fields/#enumeration-types
@@ -79,7 +87,7 @@ class ProductInstance(models.Model):
     # The product code is aa 64-bit integer where the upper 32 bits are the product ID
     # and the lower 32 bits are the serial number, thus uniquely identifying a product instance
     code = models.BigIntegerField(primary_key=True, verbose_name='Product code')
-    scan_in_time = models.DateTimeField(verbose_name='Time when product instance was scanned in')
+    scan_time = models.DateTimeField(verbose_name='Time when product instance was scanned in')
 
     # Product ID is upper 32 bits
     def get_product_id(self):

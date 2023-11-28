@@ -29,10 +29,15 @@ flutter build web
 
 ```bash
 # Working directory should be server
-python ics/manage.py runserver 0.0.0.0:8000
+python ics/manage.py runserver
 ```
 
-Open 127.0.0.1:8000 in a browser to access the dashboard. Use Ctrl-C to stop the server.
+Navigate to:
+- 127.0.0.1:8000/admin to access the admin page
+- 127.0.0.1:8000/api to access the backend API
+- 127.0.0.1:8000/dashboard to access the dashboard
+
+Use Ctrl-C to stop the server.
 
 ## Build server container image
 

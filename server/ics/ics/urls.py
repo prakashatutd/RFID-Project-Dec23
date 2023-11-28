@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.views.static import serve
 
 SERVER_DIR = settings.BASE_DIR.parent
@@ -12,6 +12,9 @@ def dashboard_redirect(request, resource):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', serve, { 'path' : 'index.html', 'document_root' : DASHBOARD_DIR }),
-    path('<path:resource>', dashboard_redirect),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/', include('dashboard.urls')),
+    path('dashboard/', serve, { 'path' : 'index.html', 'document_root' : DASHBOARD_DIR }),
+    path('dashboard/<path:resource>', dashboard_redirect),
+] 
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
