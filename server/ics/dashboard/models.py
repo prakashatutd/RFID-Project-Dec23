@@ -73,7 +73,7 @@ class ScanEvent(models.Model):
     action = models.IntegerField(choices=ScanAction.choices,
                                  verbose_name='Action taken when product was scanned')
     
-    new_quantity = models.PositiveIntegerField(verbose_name='New quantity of product in warehouse after scan')    
+    quantity = models.PositiveIntegerField(verbose_name='Quantity of product scanned')    
     time = models.DateTimeField(verbose_name='Time at which product was scanned')
 
 # Represents an instance of a product that is currently stored in the warehouse

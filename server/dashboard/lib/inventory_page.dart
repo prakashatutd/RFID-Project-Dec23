@@ -1,22 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-// Basic product info shown on inventory page
-class ProductBasicInfo {
-  final int id;
-  final String name;
-  final String category;
-  final int resupplyThreshold;
-  int quantity;
-
-  ProductBasicInfo(
-    this.id,
-    this.name,
-    this.category,
-    this.resupplyThreshold,
-    this.quantity) {
-  }
-}
+import 'api.dart';
 
 // Additional product info that is shown in pop-up
 class ProductDetailedInfo {
@@ -37,40 +22,31 @@ class ProductDetailedInfo {
   }
 }
 
-class InventoryDataSource extends DataTableSource {
-  final List<ProductBasicInfo> _products = <ProductBasicInfo>[
-    ProductBasicInfo(111222333, 'BIC Soft Feel Ballpoint Pen 25ct', 'Pens', 25, 40),
-    ProductBasicInfo(777555444, 'X-ACTO Quiet Pro 35ct', 'Pencil Sharpeners', 5, 2),
-    ProductBasicInfo(444999000, 'Crayola Washable Markers 100ct', 'Markers', 15, 30),
-    ProductBasicInfo(444111555, 'Fresh Oranges 60ct', 'Produce', 20, 57),
-  ];
+class InventoryDataSource extends AsyncDataTableSource {
+  String? categoryFilter = null;
+  String? orderingField = null;
+  String? searchField = null;
+
+  InventoryAPI _api = InventoryAPI();
 
   @override
-  int get rowCount => _products.length;
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-
-  @override
-  DataRow? getRow(int index) {
-    if (index < 0 || index > rowCount)
-      return null;
-
-    final ProductBasicInfo product = _products[index];
-
-    return DataRow(
-      cells: <DataCell>[
-        DataCell(Text(product.id.toString())),
-        DataCell(Text(product.name)),
-        DataCell(Text(product.category)),
-        DataCell(Text(product.resupplyThreshold.toString())),
-        DataCell(Text(product.quantity.toString())),
-      ],
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    ListResponse<Product> products = await _api.getProducts(count, startIndex, categoryFilter, orderingField, searchField);
+    return AsyncRowsResponse(
+      products.totalCount,
+      List<DataRow>.from(products.results.map((Product product) => 
+        DataRow(
+          cells: <DataCell>[
+            DataCell(Text(product.id.toString())),
+            DataCell(Text(product.name)),
+            DataCell(Text(product.category)),
+            DataCell(Text(product.reorderPoint.toString())),
+            DataCell(Text(product.quantity.toString())),
+          ],
+        )
+      )),
     );
-  }
+  } 
 }
 
 final InventoryDataSource _inventoryDataSource = InventoryDataSource();
@@ -89,13 +65,19 @@ class _InventoryPageState extends State<InventoryPage> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),      
-      child: PaginatedDataTable2(
+      child: AsyncPaginatedDataTable2(
         availableRowsPerPage: <int>[10, 20, 30],
+        errorBuilder: (e) => _ErrorAndRetryBox(
+          e.toString(),
+          () => _inventoryDataSource.refreshDatasource()
+        ),
         headingTextStyle: TextStyle(fontWeight: FontWeight.bold),
-        rowsPerPage: _rowsPerPage,
+        initialFirstRowIndex: 0,
         onRowsPerPageChanged: (int? value) {
           _rowsPerPage = value!;
         },
+        pageSyncApproach: PageSyncApproach.doNothing,
+        rowsPerPage: _rowsPerPage,        
         showFirstLastButtons: true,
         source: _inventoryDataSource,
         columns: const <DataColumn2>[
@@ -122,6 +104,43 @@ class _InventoryPageState extends State<InventoryPage> {
             numeric: true,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorAndRetryBox extends StatelessWidget {
+  const _ErrorAndRetryBox(this.errorMessage, this.retry);
+
+  final String errorMessage;
+  final void Function() retry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        height: 120,
+        color: Colors.red,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Oops! $errorMessage', style: const TextStyle(color: Colors.white)),
+            TextButton(
+              onPressed: retry,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                  ),
+                  Text('Retry', style: TextStyle(color: Colors.white))
+                ],
+              )
+            ),
+          ],
+        ),
       ),
     );
   }

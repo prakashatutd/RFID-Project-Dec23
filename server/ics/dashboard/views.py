@@ -6,8 +6,8 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, ScanEvent
+from .serializers import ProductSerializer, ScanEventSerializer
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -18,8 +18,16 @@ def api_root(request, format=None):
 class ProductList(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+    # Filtering, ordering, and search
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ['category']
     ordering_fields = ['name', 'category', 'rop']
     ordering = 'category'
-    search_fields = ['id', 'name']
+    search_fields = ['name']
+
+class ScanEventList(ListAPIView):
+    queryset = ScanEvent.objects.all()
+    serializer_class = ScanEventSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    #filterset_fields = ['']

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'inventory_page.dart';
 import 'trends_page.dart';
@@ -108,11 +109,15 @@ class _DashboardState extends State<Dashboard> {
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: false),
+      theme: ThemeData(
+        useMaterial3: false,
+        textTheme: GoogleFonts.robotoTextTheme(),
+      ),
       home: const Dashboard(),
-    ),
+    )
   );
 }
