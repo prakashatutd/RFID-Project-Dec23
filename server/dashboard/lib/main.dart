@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'api.dart';
 import 'inventory_page.dart';
 import 'trends_page.dart';
 import 'orders_page.dart';
@@ -14,8 +15,10 @@ class _DashboardPage {
   const _DashboardPage(this.name, this.icon, this.content);
 }
 
-const List<_DashboardPage> _dashboardPages = <_DashboardPage>[
-  _DashboardPage('Inventory', Icon(Icons.list), const InventoryPage()),
+InventoryControlSystemAPI api = InventoryControlSystemAPI();
+
+List<_DashboardPage> _dashboardPages = <_DashboardPage>[
+  _DashboardPage('Inventory', Icon(Icons.list), InventoryPage(api)),
   _DashboardPage('History', Icon(Icons.history), const ScanHistoryPage()),
   _DashboardPage('Trends', Icon(Icons.timeline), const TrendsPage()),
   _DashboardPage('Orders', Icon(Icons.local_shipping), const OrdersPage()),

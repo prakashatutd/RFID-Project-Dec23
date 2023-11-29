@@ -57,12 +57,12 @@ class ScanEvent {
   );
 }
 
-class InventoryAPI {
+class InventoryControlSystemAPI {
   static const String _baseUrl = '127.0.0.1:8000';
   static const String _apiRoot = '/api/';
   static const String _productsEndpoint = _apiRoot + 'products/';
 
-  final _httpClient = http.Client();
+  late final _httpClient = http.Client();
 
   // Possibility of race condition?
   Map<String, String> _productsQueryParameters = {};

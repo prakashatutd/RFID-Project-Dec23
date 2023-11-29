@@ -26,8 +26,9 @@ class InventoryDataSource extends AsyncDataTableSource {
   String? categoryFilter = null;
   String? orderingField = null;
   String? searchField = null;
+  InventoryControlSystemAPI _api;
 
-  InventoryAPI _api = InventoryAPI();
+  InventoryDataSource(this._api);
 
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
@@ -49,17 +50,20 @@ class InventoryDataSource extends AsyncDataTableSource {
   } 
 }
 
-final InventoryDataSource _inventoryDataSource = InventoryDataSource();
-
 class InventoryPage extends StatefulWidget {
-  const InventoryPage({super.key});
+  final InventoryControlSystemAPI _api;
+
+  const InventoryPage(this._api, {super.key});
 
   @override
-  _InventoryPageState createState() => _InventoryPageState();
+  _InventoryPageState createState() => _InventoryPageState(InventoryDataSource(_api));
 }
 
 class _InventoryPageState extends State<InventoryPage> {
   int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+  InventoryDataSource _inventoryDataSource;
+
+  _InventoryPageState(this._inventoryDataSource);
 
   @override
   Widget build(BuildContext context) {
