@@ -9,6 +9,8 @@
 #include "TagCache.h"
 
 #define EPC_OFFSET 31
+#define WIFI_SSID "ssid"
+#define WIFI_PASSWORD "password"
 
 #define BUZZER1 9
 #define BUZZER2 10
