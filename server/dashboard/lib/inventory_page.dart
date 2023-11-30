@@ -109,7 +109,7 @@ class _InventoryPageState extends State<InventoryPage> {
     return Padding(
       padding: const EdgeInsets.all(16.0),      
       child: AsyncPaginatedDataTable2(
-        availableRowsPerPage: <int>[10, 15, 20, 25],
+        availableRowsPerPage: const <int>[10, 15, 20, 25],
         errorBuilder: (e) => _ErrorAndRetryBox(
           e.toString(),
           () => _inventoryDataSource.refreshDatasource()
