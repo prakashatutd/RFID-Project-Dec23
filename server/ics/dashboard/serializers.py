@@ -10,8 +10,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ScanEventSerializer(serializers.ModelSerializer):
     gate_id = serializers.ReadOnlyField(source='gate.public_id')
+    product_id = serializers.ReadOnlyField(source='product.id')
     product_name = serializers.ReadOnlyField(source='product.name')
 
     class Meta:
         model = ScanEvent
-        fields = ['gate_id', 'product_name', 'action', 'quantity', 'time']
+        fields = ['gate_id', 'product_id', 'product_name', 'action', 'quantity', 'time']
