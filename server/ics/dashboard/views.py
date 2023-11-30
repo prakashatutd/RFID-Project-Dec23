@@ -13,6 +13,7 @@ from .serializers import ProductSerializer, ScanEventSerializer
 def api_root(request, format=None):
     return Response({
         'products': reverse('product-list', request=request, format=format),
+        'history': reverse('scan-events-list', request=request, format=format),
     })
 
 class ProductList(ListAPIView):
@@ -29,5 +30,8 @@ class ProductList(ListAPIView):
 class ScanEventList(ListAPIView):
     queryset = ScanEvent.objects.all()
     serializer_class = ScanEventSerializer
+
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    #filterset_fields = ['']
+    filterset_fields = ['gate_id', 'action']
+    ordering_fields = ['time']
+    search_fields = ['product_name']

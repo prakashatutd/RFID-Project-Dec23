@@ -58,22 +58,23 @@ class RFIDGate(models.Model):
 
 # Represents an event in which an RFID gate scanned one or more instances of a product
 class ScanEvent(models.Model):
-    product_id = models.ForeignKey(Product,
-                                   null=True,
-                                   blank=True,
-                                   on_delete=models.SET_NULL,
-                                   verbose_name='ID of scanned product')
+    product = models.ForeignKey(Product,
+                                null=True,
+                                blank=True,
+                                on_delete=models.SET_NULL,
+                                verbose_name='Product that was scanned')
     
-    gate_internal_id = models.ForeignKey(RFIDGate,
-                                         null=True,
-                                         blank=True,
-                                         on_delete=models.SET_NULL,
-                                         verbose_name='Internal ID of gate that scanned product')
+    gate = models.ForeignKey(RFIDGate,
+                             null=True,
+                             blank=True,
+                             on_delete=models.SET_NULL,
+                             verbose_name='Gate that scanned the product')
     
     action = models.IntegerField(choices=ScanAction.choices,
                                  verbose_name='Action taken when product was scanned')
     
-    quantity = models.PositiveIntegerField(verbose_name='Quantity of product scanned')    
+    quantity = models.PositiveIntegerField(verbose_name='Quantity of product scanned')
+    new_quantity = models.PositiveIntegerField(verbose_name='New product quantity after scan')
     time = models.DateTimeField(verbose_name='Time at which product was scanned')
 
 # Represents an instance of a product that is currently stored in the warehouse
