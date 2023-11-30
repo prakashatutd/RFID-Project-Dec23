@@ -18,11 +18,11 @@ class _DashboardPage {
 InventoryControlSystemAPI api = InventoryControlSystemAPI();
 
 List<_DashboardPage> _dashboardPages = <_DashboardPage>[
-  _DashboardPage('Inventory', Icon(Icons.list), InventoryPage(api)),
-  _DashboardPage('History', Icon(Icons.history), const ScanHistoryPage()),
-  _DashboardPage('Trends', Icon(Icons.timeline), const TrendsPage()),
-  _DashboardPage('Orders', Icon(Icons.local_shipping), const OrdersPage()),
-  _DashboardPage('Gates', Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
+  _DashboardPage('Inventory', const Icon(Icons.list), InventoryPage(api)),
+  _DashboardPage('History', const Icon(Icons.history), const ScanHistoryPage()),
+  _DashboardPage('Trends', const Icon(Icons.timeline), const TrendsPage()),
+  _DashboardPage('Orders', const Icon(Icons.local_shipping), const OrdersPage()),
+  _DashboardPage('Gates', const Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
 ];
 
 final List<NavigationDrawerDestination> _navigationDrawerDestinations = _dashboardPages.map(

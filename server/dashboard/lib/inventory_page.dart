@@ -23,16 +23,34 @@ class ProductDetailedInfo {
 }
 
 class InventoryDataSource extends AsyncDataTableSource {
-  String? categoryFilter = null;
-  String? orderingField = null;
-  String? searchField = null;
+  String? _categoryFilter = null;
+  String? _orderingField = null;
+  String? _searchField = null;
   InventoryControlSystemAPI _api;
 
   InventoryDataSource(this._api);
 
+  void filterByCategory(String category) {
+    _categoryFilter = category;
+    refreshDatasource();
+  }
+
+  void sortBy(String field, bool ascending) {
+    if (!ascending)
+      _orderingField = '-' + field;
+    else
+      _orderingField = field;
+    refreshDatasource();
+  }
+
+  void searchByName(String name) {
+    _searchField = name;
+    refreshDatasource();
+  }
+
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
-    ListResponse<Product> products = await _api.getProducts(count, startIndex, categoryFilter, orderingField, searchField);
+    ListResponse<Product> products = await _api.getProducts(count, startIndex, _categoryFilter, _orderingField, _searchField);
     return AsyncRowsResponse(
       products.totalCount,
       List<DataRow>.from(products.results.map((Product product) => 
@@ -60,20 +78,58 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+  int _rowsPerPage = 10;
   InventoryDataSource _inventoryDataSource;
+  int _sortColumnIndex = 2; // category by default
+  bool _sortAscending = true;
 
   _InventoryPageState(this._inventoryDataSource);
+
+  void sortBy(int columnIndex, bool ascending) {
+    String sortField = '';
+    if (columnIndex == 1)
+      sortField = 'name';
+    else if (columnIndex == 2)
+      sortField = 'category';
+    else if (columnIndex == 3)
+      sortField = 'rop';
+    else
+      return;
+
+    _inventoryDataSource.sortBy(sortField, ascending);
+    setState(() {
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),      
       child: AsyncPaginatedDataTable2(
-        availableRowsPerPage: <int>[10, 20, 30],
+        availableRowsPerPage: <int>[10, 15, 20, 25],
         errorBuilder: (e) => _ErrorAndRetryBox(
           e.toString(),
           () => _inventoryDataSource.refreshDatasource()
+        ),
+        header: Row(
+          children: <Widget>[
+            Text(
+              'Products',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+              child: SizedBox(
+                width: 400,
+                child: SearchBar(
+                  leading: const Icon(Icons.search),
+                ),
+              ),
+            ),
+          ],
         ),
         headingTextStyle: TextStyle(fontWeight: FontWeight.bold),
         initialFirstRowIndex: 0,
@@ -83,8 +139,11 @@ class _InventoryPageState extends State<InventoryPage> {
         pageSyncApproach: PageSyncApproach.doNothing,
         rowsPerPage: _rowsPerPage,        
         showFirstLastButtons: true,
+        sortArrowIcon: Icons.arrow_drop_up,
+        sortAscending: _sortAscending,
+        sortColumnIndex: _sortColumnIndex,
         source: _inventoryDataSource,
-        columns: const <DataColumn2>[
+        columns: <DataColumn2>[
           DataColumn2(
             label: Text('Product ID'),
             size: ColumnSize.S,
@@ -92,15 +151,18 @@ class _InventoryPageState extends State<InventoryPage> {
           DataColumn2(
             label: Text('Name'),
             size: ColumnSize.L,
+            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Category'),
             size: ColumnSize.M,
+            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Resupply Threshold'),
             size: ColumnSize.S,
             numeric: true,
+            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Quantity'),
