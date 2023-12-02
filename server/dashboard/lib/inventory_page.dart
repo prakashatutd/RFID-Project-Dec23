@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 import 'api.dart';
+import 'common.dart';
 import 'data_definitions.dart';
 
 // Additional product info that is shown in pop-up
@@ -80,11 +81,11 @@ class InventoryPage extends StatefulWidget {
 
 class _InventoryPageState extends State<InventoryPage> {
   int _rowsPerPage = 10;
-  InventoryDataSource _inventoryDataSource;
+  InventoryDataSource _dataSource;
   int _sortColumnIndex = 2; // category by default
   bool _sortAscending = true;
 
-  _InventoryPageState(this._inventoryDataSource);
+  _InventoryPageState(this._dataSource);
 
   void sortBy(int columnIndex, bool ascending) {
     String sortField = '';
@@ -97,7 +98,7 @@ class _InventoryPageState extends State<InventoryPage> {
     else
       return;
 
-    _inventoryDataSource.sortBy(sortField, ascending);
+    _dataSource.sortBy(sortField, ascending);
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
@@ -110,9 +111,9 @@ class _InventoryPageState extends State<InventoryPage> {
       padding: const EdgeInsets.all(16.0),      
       child: AsyncPaginatedDataTable2(
         availableRowsPerPage: const <int>[10, 15, 20, 25],
-        errorBuilder: (e) => _ErrorAndRetryBox(
+        errorBuilder: (e) => ErrorAndRetryBox(
           e.toString(),
-          () => _inventoryDataSource.refreshDatasource()
+          () => _dataSource.refreshDatasource()
         ),
         header: Row(
           children: <Widget>[
@@ -127,6 +128,7 @@ class _InventoryPageState extends State<InventoryPage> {
                 width: 400,
                 child: SearchBar(
                   leading: const Icon(Icons.search),
+                  elevation: const MaterialStatePropertyAll<double?>(3.0),
                 ),
               ),
             ),
@@ -143,7 +145,7 @@ class _InventoryPageState extends State<InventoryPage> {
         sortArrowIcon: Icons.arrow_drop_up,
         sortAscending: _sortAscending,
         sortColumnIndex: _sortColumnIndex,
-        source: _inventoryDataSource,
+        source: _dataSource,
         columns: <DataColumn2>[
           DataColumn2(
             label: Text('Product ID'),
@@ -171,43 +173,6 @@ class _InventoryPageState extends State<InventoryPage> {
             numeric: true,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ErrorAndRetryBox extends StatelessWidget {
-  const _ErrorAndRetryBox(this.errorMessage, this.retry);
-
-  final String errorMessage;
-  final void Function() retry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        height: 120,
-        color: Colors.red,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Oops! $errorMessage', style: const TextStyle(color: Colors.white)),
-            TextButton(
-              onPressed: retry,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                  ),
-                  Text('Retry', style: TextStyle(color: Colors.white))
-                ],
-              )
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -19,10 +19,10 @@ InventoryControlSystemAPI api = InventoryControlSystemAPI();
 
 List<_DashboardPage> _dashboardPages = <_DashboardPage>[
   _DashboardPage('Inventory', const Icon(Icons.list), InventoryPage(api)),
-  _DashboardPage('History', const Icon(Icons.history), const ScanHistoryPage()),
+  _DashboardPage('History', const Icon(Icons.history), ScanHistoryPage(api)),
   _DashboardPage('Trends', const Icon(Icons.timeline), const TrendsPage()),
   _DashboardPage('Orders', const Icon(Icons.local_shipping), const OrdersPage()),
-  _DashboardPage('Gates', const Icon(Icons.sensors), const ScanHistoryPage()), // placeholder
+  _DashboardPage('Gates', const Icon(Icons.sensors), const OrdersPage()), // placeholder
 ];
 
 final List<NavigationDrawerDestination> _navigationDrawerDestinations = _dashboardPages.map(

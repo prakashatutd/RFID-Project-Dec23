@@ -1,102 +1,133 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-enum ScanAction {
-  Incoming,
-  Outgoing,
-}
+import 'api.dart';
+import 'common.dart';
+import 'data_definitions.dart';
 
-class ScanEvent {
-  final String gateId;
-  final int productId;
-  final String productName;
-  final ScanAction action;
-  final int quantity;
-  final DateTime scanTime;
+class ScanHistoryDataSource extends AsyncDataTableSource {
+  ListQueryParameters _queryParameters = ListQueryParameters();
+  InventoryControlSystemAPI _api;
 
-  ScanEvent(
-    this.gateId,
-    this.productId,
-    this.productName,
-    this.action,
-    this.quantity,
-    this.scanTime,
-  );
-}
+  ScanHistoryDataSource(this._api);
 
-class ScanHistoryDataSource extends DataTableSource {
-  final List<ScanEvent> _scanEvents = <ScanEvent>[
-    ScanEvent("ZXY190008", 111222333, 'BIC Soft Feel Ballpoint Pen 25ct', ScanAction.Incoming, 10, DateTime.now()),
-    ScanEvent("GRU000007", 777555444, 'X-ACTO Quiet Pro 35ct', ScanAction.Outgoing, -20, DateTime.now()),
-    ScanEvent("NLH200001", 444999000, 'Crayola Washable Markers 100ct', ScanAction.Incoming, 15, DateTime.now()),
-  ];
-
-  @override
-  int get rowCount => _scanEvents.length;
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-
-  @override
-  DataRow? getRow(int index) {
-    if (index < 0 || index > rowCount)
-      return null;
-
-    final ScanEvent scanEvent = _scanEvents[index];
-
-    return DataRow(
-      cells: <DataCell>[
-        DataCell(Text(scanEvent.scanTime.toString())), // replace with formatted time
-        DataCell(Text(scanEvent.gateId)),
-        DataCell(Text(scanEvent.productId.toString())),
-        DataCell(Text(scanEvent.productName)),
-        DataCell(Text(scanEvent.action.name)),
-        DataCell(Text(scanEvent.quantity.toString())),
-      ],
-    );
+  void filterByCategory(String category) {
+    _queryParameters.category = category;
+    refreshDatasource();
   }
-}
 
-final ScanHistoryDataSource _scanHistoryDataSource = ScanHistoryDataSource();
+  void sortBy(String field, bool ascending) {
+    if (!ascending)
+      _queryParameters.ordering = '-' + field;
+    else
+      _queryParameters.ordering = field;
+    refreshDatasource();
+  }
+
+  void searchByName(String name) {
+    _queryParameters.search = name;
+    refreshDatasource();
+  }
+
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    _queryParameters.offset = startIndex;
+    _queryParameters.limit = count;
+    ListResponse<ScanEvent> scanEvents = await _api.getScanEvents(_queryParameters);
+    return AsyncRowsResponse(
+      scanEvents.totalCount,
+      List<DataRow>.from(scanEvents.results.map((ScanEvent scanEvent) => 
+        DataRow(
+          cells: <DataCell>[
+            DataCell(Text(scanEvent.scanTime.toString())),
+            DataCell(Text(scanEvent.gateId)),
+            DataCell(Text(scanEvent.productName)),
+            DataCell(Text(scanEvent.action.toString())),
+            DataCell(Text(scanEvent.quantity.toString())), // int to String conversion fails for some reason
+          ],
+        )
+      )),
+    );
+  } 
+}
 
 class ScanHistoryPage extends StatefulWidget {
-  const ScanHistoryPage({super.key});
+  final InventoryControlSystemAPI _api;
+
+  const ScanHistoryPage(this._api, {super.key});
 
   @override
-  _ScanHistoryPageState createState() => _ScanHistoryPageState();
+  _ScanHistoryPageState createState() => _ScanHistoryPageState(ScanHistoryDataSource(_api));
 }
 
 class _ScanHistoryPageState extends State<ScanHistoryPage> {
-  int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+  int _rowsPerPage = 10;
+  ScanHistoryDataSource _dataSource;
+  int _sortColumnIndex = 0; // scan time
+  bool _sortAscending = true;
+
+  _ScanHistoryPageState(this._dataSource);
+
+  void sortBy(int columnIndex, bool ascending) {
+    if (columnIndex != 0)
+      return;
+
+    _dataSource.sortBy('time', ascending);
+    setState(() {
+      _sortAscending = ascending;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),      
-      child: PaginatedDataTable2(
-        availableRowsPerPage: <int>[10, 20, 30],
+      child: AsyncPaginatedDataTable2(
+        availableRowsPerPage: const <int>[10, 15, 20, 25],
+        errorBuilder: (e) => ErrorAndRetryBox(
+          e.toString(),
+          () => _dataSource.refreshDatasource()
+        ),
+        header: Row(
+          children: <Widget>[
+            Text(
+              'Scan Events',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+              child: SizedBox(
+                width: 400,
+                child: SearchBar(
+                  leading: const Icon(Icons.search),
+                  elevation: const MaterialStatePropertyAll<double?>(3.0),
+                ),
+              ),
+            ),
+          ],
+        ),
         headingTextStyle: TextStyle(fontWeight: FontWeight.bold),
-        rowsPerPage: _rowsPerPage,
+        initialFirstRowIndex: 0,
         onRowsPerPageChanged: (int? value) {
           _rowsPerPage = value!;
         },
+        pageSyncApproach: PageSyncApproach.doNothing,
+        rowsPerPage: _rowsPerPage,        
         showFirstLastButtons: true,
-        source: _scanHistoryDataSource,
-        columns: const <DataColumn2>[
+        sortArrowIcon: Icons.arrow_drop_up,
+        sortAscending: _sortAscending,
+        sortColumnIndex: _sortColumnIndex,
+        source: _dataSource,
+        columns: <DataColumn2>[
           DataColumn2(
-            label: Text('Timestamp'),
-            size: ColumnSize.S,
+            label: Text('Scan Time'),
+            size: ColumnSize.M,
+            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Gate ID'),
-            size: ColumnSize.S,
-          ),
-          DataColumn2(
-            label: Text('Product ID'),
-            size: ColumnSize.S,
+            size: ColumnSize.M,
           ),
           DataColumn2(
             label: Text('Product Name'),
@@ -104,7 +135,7 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           ),
           DataColumn2(
             label: Text('Action'),
-            size: ColumnSize.S,
+            size: ColumnSize.M,
           ),
           DataColumn2(
             label: Text('Quantity'),

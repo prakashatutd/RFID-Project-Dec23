@@ -30,7 +30,7 @@ class ScanEvent {
   final String gateId;
   final int productId;
   final String productName;
-  final ScanAction action;
+  final int action;
   final int quantity;
   final DateTime scanTime;
 
@@ -47,7 +47,7 @@ class ScanEvent {
     : gateId      = json['gate_id']      as String,
       productId   = json['product_id']   as int,
       productName = json['product_name'] as String,
-      action      = json['action']       as ScanAction,
+      action      = json['action']       as int,
       quantity    = json['quantity']     as int,
       scanTime    = DateTime.parse(json['time'] as String);
 }
