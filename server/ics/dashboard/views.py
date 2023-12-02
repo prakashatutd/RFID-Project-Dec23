@@ -6,14 +6,15 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from .models import Product, ScanEvent
-from .serializers import ProductSerializer, ScanEventSerializer
+from .models import Product, ScanEvent, RFIDGate
+from .serializers import ProductSerializer, ScanEventSerializer, RFIDGateSerializer
 
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
         'products': reverse('product-list', request=request, format=format),
         'history': reverse('scan-events-list', request=request, format=format),
+        'gates': reverse('gate-list', request=request, format=format),
     })
 
 class ProductList(ListAPIView):
@@ -35,3 +36,7 @@ class ScanEventList(ListAPIView):
     filterset_fields = ['gate_id', 'action']
     ordering_fields = ['time']
     search_fields = ['product_name']
+
+class GateList(ListAPIView):
+    queryset = RFIDGate.objects.all()
+    serializer_class = RFIDGateSerializer

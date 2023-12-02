@@ -7,4 +7,5 @@ urlpatterns = format_suffix_patterns([
     path('', views.api_root),
     path('products/', views.ProductList.as_view(), name='product-list'),
     path('history/', views.ScanEventList.as_view(), name='scan-events-list'),
+    path('gates/', views.GateList.as_view(), name='gate-list'),
 ])
