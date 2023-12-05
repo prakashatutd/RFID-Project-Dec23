@@ -128,17 +128,17 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           DataColumn2(
             label: Text('Gate ID'),
             size: ColumnSize.M,
-            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
+            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Product Name'),
-            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
+            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
             size: ColumnSize.L,
           ),
           DataColumn2(
             label: Text('Action'),
             size: ColumnSize.M,
-            onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
+            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
           ),
           DataColumn2(
             label: Text('Quantity'),

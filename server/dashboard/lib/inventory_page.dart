@@ -53,22 +53,27 @@ class InventoryDataSource extends AsyncDataTableSource {
     _queryParameters.offset = startIndex;
     _queryParameters.limit = count;
     ListResponse<Product> products = await _api.getProducts(_queryParameters);
+        List<DataRow> dataRows = products.results.map((Product product) {
+      bool highlightRed = product.quantity < product.reorderPoint;
+
+      return DataRow(
+        color: highlightRed ? MaterialStateColor.resolveWith((Set<MaterialState> states) => Colors.red) : null,
+        cells: <DataCell>[
+          DataCell(Text(product.id.toString())),
+          DataCell(Text(product.name)),
+          DataCell(Text(product.category)),
+          DataCell(Text(product.reorderPoint.toString())),
+          DataCell(Text(product.quantity.toString())),
+        ],
+      );
+    }).toList();
+
     return AsyncRowsResponse(
       products.totalCount,
-      List<DataRow>.from(products.results.map((Product product) => 
-        DataRow(
-          cells: <DataCell>[
-            DataCell(Text(product.id.toString())),
-            DataCell(Text(product.name)),
-            DataCell(Text(product.category)),
-            DataCell(Text(product.reorderPoint.toString())),
-            DataCell(Text(product.quantity.toString())),
-          ],
-        )
-      )),
+      List<DataRow>.from(dataRows),
     );
-  } 
-}
+  }
+  }
 
 class InventoryPage extends StatefulWidget {
   final InventoryControlSystemAPI _api;
