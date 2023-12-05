@@ -5,9 +5,11 @@ import 'api.dart';
 import 'common.dart';
 import 'data_definitions.dart';
 
+
 class ScanHistoryDataSource extends AsyncDataTableSource {
   ListQueryParameters _queryParameters = ListQueryParameters();
   InventoryControlSystemAPI _api;
+  bool _sortActionAscending = true;
 
   ScanHistoryDataSource(this._api);
 
@@ -17,10 +19,15 @@ class ScanHistoryDataSource extends AsyncDataTableSource {
   }
 
   void sortBy(String field, bool ascending) {
-    if (!ascending)
-      _queryParameters.ordering = '-' + field;
-    else
-      _queryParameters.ordering = field;
+    if (field == 'action') {
+      _sortActionAscending = ascending;
+    } else {
+      if (!ascending) {
+        _queryParameters.ordering = '-' + field;
+      } else {
+        _queryParameters.ordering = field;
+      }
+    }
     refreshDatasource();
   }
 
@@ -33,22 +40,30 @@ class ScanHistoryDataSource extends AsyncDataTableSource {
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
     _queryParameters.offset = startIndex;
     _queryParameters.limit = count;
+
     ListResponse<ScanEvent> scanEvents = await _api.getScanEvents(_queryParameters);
+
+    if (_sortActionAscending) {
+      scanEvents.results.sort((a, b) => a.action.compareTo(b.action));
+    } else {
+      scanEvents.results.sort((a, b) => b.action.compareTo(a.action));
+    }
+
     return AsyncRowsResponse(
       scanEvents.totalCount,
-      List<DataRow>.from(scanEvents.results.map((ScanEvent scanEvent) => 
-        DataRow(
-          cells: <DataCell>[
-            DataCell(Text(scanEvent.scanTime.toString())),
-            DataCell(Text(scanEvent.gateId)),
-            DataCell(Text(scanEvent.productName)),
-            DataCell(Text(scanEvent.action.toString())),
-            DataCell(Text(scanEvent.quantity.toString())), // int to String conversion fails for some reason
-          ],
-        )
+      List<DataRow>.from(scanEvents.results.map((ScanEvent scanEvent) =>
+          DataRow(
+            cells: <DataCell>[
+              DataCell(Text(scanEvent.scanTime.toString())),
+              DataCell(Text(scanEvent.gateId)),
+              DataCell(Text(scanEvent.productName)),
+              DataCell(Text(scanEvent.action.toString())),
+              DataCell(Text(scanEvent.quantity.toString())),
+            ],
+          ),
       )),
     );
-  } 
+  }
 }
 
 class ScanHistoryPage extends StatefulWidget {
@@ -69,11 +84,17 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
   _ScanHistoryPageState(this._dataSource);
 
   void sortBy(int columnIndex, bool ascending) {
-    if (columnIndex != 0)
-      return;
+    if (columnIndex == 3) {
+      // Sort by 'action' column
+      _dataSource.sortBy('action', ascending);
+    } else {
+      // Handle sorting for other columns if needed
+      String field = ''; // Determine the field based on columnIndex
+      _dataSource.sortBy(field, ascending);
+    }
 
-    _dataSource.sortBy('time', ascending);
     setState(() {
+      _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
     });
   }
@@ -127,18 +148,16 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           ),
           DataColumn2(
             label: Text('Gate ID'),
-            size: ColumnSize.M,
-            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
+            size: ColumnSize.M
           ),
           DataColumn2(
             label: Text('Product Name'),
-            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
             size: ColumnSize.L,
           ),
           DataColumn2(
             label: Text('Action'),
             size: ColumnSize.M,
-            //onSort: (columnIndex, ascending) => sortBy(columnIndex, ascending),
+           
           ),
           DataColumn2(
             label: Text('Quantity'),
