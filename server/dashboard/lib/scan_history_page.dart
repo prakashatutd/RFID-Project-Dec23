@@ -5,7 +5,6 @@ import 'api.dart';
 import 'common.dart';
 import 'data_definitions.dart';
 
-
 class ScanHistoryDataSource extends AsyncDataTableSource {
   ListQueryParameters _queryParameters = ListQueryParameters();
   InventoryControlSystemAPI _api;
@@ -58,12 +57,17 @@ class ScanHistoryDataSource extends AsyncDataTableSource {
               DataCell(Text(scanEvent.gateId)),
               DataCell(Text(scanEvent.productName)),
               DataCell(Text(scanEvent.action.toString())),
-              DataCell(Text(scanEvent.quantity.toString())),
+              DataCell(Text(convertIntToString(scanEvent.quantity))),
             ],
           ),
       )),
     );
   }
+}
+
+String convertIntToString(int? value, {String fallback = 'N/A'}) 
+{
+  return value != null ? value.toString() : fallback;
 }
 
 class ScanHistoryPage extends StatefulWidget {
