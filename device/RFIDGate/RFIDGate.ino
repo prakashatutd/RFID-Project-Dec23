@@ -1,7 +1,3 @@
-/*
-  RFID Gate Firmware
-*/
-
 #include <IPAddress.h>
 #include <WiFiS3.h>
 
@@ -9,20 +5,18 @@
 #include "TagCache.h"
 
 #define EPC_OFFSET 31
-#define WIFI_SSID "ssid"
-#define WIFI_PASSWORD "password"
+#define WIFI_SSID "RFID-ICS"
+#define WIFI_PASSWORD "RFID-ICS"
+#define INTERNAL_ID "1"
+#define SERVER_PORT 8000
 
 #define BUZZER1 9
 #define BUZZER2 10
 
-#define WRITE_COMMAND "write"
-#define SETPOWER_COMMAND "gain"
-#define DEBUG_COMMAND "debug"
-#define STATS_COMMAND "stats"
-
 // WiFi variables
 IPAddress serverIP(192, 168, 1, 133);
 WiFiClient wifiClient;
+unsigned long lastMessageTime = 0;
 
 // RFID variables
 bool debug = false;
@@ -100,6 +94,35 @@ bool connectWifi()
   return true;
 }
 
+void sendProductCodes()
+{
+  //wifiClient.println("PATCH /api/gate/scan/ HTTP/1.0");
+  //wifiClient.println("{\"internal_id\":\"0\",");
+
+  for (size_t i = 0; i < tagCache.capacity(); ++i)
+  {
+    uint32_t productId;
+    uint32_t productCode;
+
+    if (!tagCache.remove(i, &productId, &productCode))
+      continue;
+    
+    //wifiClient.print("\"");
+    //for (size_t j = 0; j < EPC_LENGTH; ++j)
+    //  wifiClient.print(epc[j], HEX);
+    //wifiClient.print("\",");
+  }
+
+  wifiClient.print("]}");
+  wifiClient.println();
+}
+
+void sendKeepAlive()
+{
+  wifiClient.println("PATCH /api/gate/status/ HTTP/1.0");
+  wifiClient.println("{\"internal_id\":\"0\"}");
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -108,6 +131,11 @@ void setup()
   pinMode(BUZZER1, OUTPUT);
   pinMode(BUZZER2, OUTPUT);
   digitalWrite(BUZZER2, LOW);
+
+  //connectWifi();
+  //Serial.println("WiFi connected!");
+
+  //wifiClient.connect(serverIP, SERVER_PORT);
 
   // Configure nano to run at 115200bps
   if (!setupNano(115200))
@@ -145,33 +173,11 @@ bool stopReading()
   return false;
 }
 
-// Write string to tag
-bool writeTag(const char* data)
+bool writeTag(uint32_t productId, uint32_t productSerialNumber)
 {
-  if (!data)
-    return false;
-
   char buffer[12] = { 0 };
-
-  for (size_t i = 0; i < sizeof(buffer) * 2; ++i)
-  {
-    char c = *data++;
-    if (c >= '0' && c <= '9')
-      c = c - '0';
-    else if (c >= 'a' && c <= 'f')
-      c = c - 'a' + 10;
-    else if (c >= 'A' && c <= 'F')
-      c = c - 'A' + 10;
-    else if (!c || c == ' ')
-      break;
-    else
-      return false;
-
-    if (i % 2 == 0)
-      buffer[i / 2] = c << 4;
-    else
-      buffer[(i - 1) / 2] += c;
-  }
+  memcpy(buffer, &productId, sizeof(productId));
+  memcpy(buffer + sizeof(productId), &productSerialNumber, sizeof(productSerialNumber));
 
   bool wasReading = stopReading();
   bool ret = nano.writeTagEPC(buffer, sizeof(buffer), 5000) == RESPONSE_SUCCESS;
@@ -191,12 +197,6 @@ const char* skipWhitespace(const char* str) {
     
   return str;
 }
-
-// Essentially only four commands:
-// - write [tag data]
-// - setpower [num]
-// - stats (temperature, power, etc)
-// - debug
 
 void loop()
 {
@@ -220,22 +220,19 @@ void loop()
 
     Serial.println(inputBuffer);
 
-    if (!strncmp(inputBuffer, WRITE_COMMAND, sizeof(WRITE_COMMAND) - 1))
+    uint32_t productId = 0;
+    uint32_t productSerialNumber = 0;
+    long gain = 0;
+
+    if (sscanf(inputBuffer, "write %u %u", &productId, &productSerialNumber) == 2)
     {
-      const char* tagData = skipWhitespace(inputBuffer + sizeof(WRITE_COMMAND) - 1);
-      if (writeTag(tagData))
-        Serial.println("Successfully wrote to tag!");
-      else
-        Serial.println("Error writing to tag!");
+        if (writeTag(productId, productSerialNumber))
+          Serial.println("Successfully wrote to tag!");
+        else
+          Serial.println("Error writing to tag!");
     }
-    else if (!strncmp(inputBuffer, SETPOWER_COMMAND, sizeof(SETPOWER_COMMAND) - 1))
+    else if (sscanf(inputBuffer, "gain %d", &gain) == 1)
     {
-      char* end;
-      const long gain = strtol(inputBuffer + sizeof(SETPOWER_COMMAND), &end, 10);
-
-      if (end == inputBuffer)
-        Serial.println("Invalid gain value!");
-
       if (gain == 0)
         stopReading();
       else if (gain > 0 || gain <= 2700)
@@ -246,15 +243,15 @@ void loop()
 
         if (wasReading)
           startReading();
-      }
-      else
-        Serial.println("Gain value must be in range [0, 2700]");
+        }
+        else
+          Serial.println("Gain value must be in range [0, 2700]");
 
-      Serial.print("Antenna gain set to ");
-      Serial.print((float)gain / 100);
-      Serial.println(" dBm");
+        Serial.print("Antenna gain set to ");
+        Serial.print((float)gain / 100);
+        Serial.println(" dBm");
     }
-    else if (!strncmp(inputBuffer, DEBUG_COMMAND, sizeof(DEBUG_COMMAND) - 1))
+    else if (!strncmp(inputBuffer, "debug", sizeof("debug") - 1))
     {
       if (debug)
       {
@@ -269,15 +266,6 @@ void loop()
         Serial.println("Debug mode enabled!");
       }
     }
-    else if (!strncmp(inputBuffer, STATS_COMMAND, sizeof(STATS_COMMAND) - 1))
-    {
-      /*Serial.println("RFID module stats:");
-      Serial.print("Antenna gain: ");
-      Serial.println("PLACEHOODER");
-      Serial.print("Temperature: ");*/
-      // print stats
-      Serial.println("<stats placeholder>");
-    }
     else
       Serial.println("Unknown command!");
   }
@@ -289,18 +277,31 @@ void loop()
     if (responseType == RESPONSE_IS_TAGFOUND)
     {
       uint8_t epcLength = nano.getTagEPCBytes();
-      if (tagCache.insert(nano.msg + EPC_OFFSET, epcLength, 3000))
+      uint8_t* epcStart = nano.msg + EPC_OFFSET;
+
+      uint32_t productId;
+      uint32_t productSerialNumber;
+      memcpy(&productId, epcStart, sizeof(productId));
+      memcpy(&productSerialNumber, epcStart + sizeof(productId), sizeof(productSerialNumber));
+
+      if (tagCache.insert(productId, productSerialNumber))
       {
         tone(BUZZER1, 1800, 100);
-        Serial.print("Tag data: ");
-        for (size_t i = EPC_OFFSET; i < EPC_OFFSET + epcLength; ++i)
-          Serial.print(nano.msg[i], HEX);
-
-        Serial.print(" (");
-        Serial.print(epcLength);
-        Serial.print(" bytes");
-        Serial.println(')');
+        Serial.print("Product ID: ");
+        Serial.print(productId);
+        Serial.print(" Product serial number: ");
+        Serial.println(productSerialNumber);
       }
     }
   }
+
+  // if (millis() - lastMessageTime > 5000 && tagCache.size() > 0)
+  // {
+  //   Serial.print("Tag cache size: ");
+  //   Serial.print(tagCache.size());
+  //   Serial.println();
+  //   sendProductCodes();
+  //   Serial.println("Sent product codes!");
+  //   lastMessageTime = millis();
+  // }
 }
