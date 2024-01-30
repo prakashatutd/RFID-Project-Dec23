@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Simple error box with a retry button that is displayed when a data table fails to load
 class ErrorAndRetryBox extends StatelessWidget {
   const ErrorAndRetryBox(this.errorMessage, this.retry);
 

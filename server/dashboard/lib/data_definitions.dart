@@ -1,3 +1,6 @@
+// Data objects that are returned by the back-end API
+// These are initialized by deserialized JSON data
+
 class Product {
   final int id;
   final String name;

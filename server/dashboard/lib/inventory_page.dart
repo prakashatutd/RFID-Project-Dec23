@@ -5,7 +5,7 @@ import 'api.dart';
 import 'common.dart';
 import 'data_definitions.dart';
 
-// Additional product info that is shown in pop-up
+// Additional product info that is shown in pop-up (unused)
 class ProductDetailedInfo {
   final String imageUrl;
   final String description;
