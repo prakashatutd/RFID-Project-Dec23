@@ -57,17 +57,12 @@ class ScanHistoryDataSource extends AsyncDataTableSource {
               DataCell(Text(scanEvent.gateId)),
               DataCell(Text(scanEvent.productName)),
               DataCell(Text(scanEvent.action.toString())),
-              DataCell(Text(convertIntToString(scanEvent.quantity))),
+              DataCell(Text(scanEvent.quantity.toString())),
             ],
           ),
       )),
     );
   }
-}
-
-String convertIntToString(int? value, {String fallback = 'N/A'}) 
-{
-  return value != null ? value.toString() : fallback;
 }
 
 class ScanHistoryPage extends StatefulWidget {

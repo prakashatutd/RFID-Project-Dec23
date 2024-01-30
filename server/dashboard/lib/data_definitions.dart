@@ -46,7 +46,7 @@ class ScanEvent {
     this.scanTime,
   );
 
-  ScanEvent.fromJson(Map<String, String> json)
+  ScanEvent.fromJson(Map<String, dynamic> json)
     : gateId      = json['gate_id']      as String,
       productId   = json['product_id']   as int,
       productName = json['product_name'] as String,
