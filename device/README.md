@@ -1,8 +1,10 @@
 # RFID Gate
 
+This directory contains the RFID gate firmware.
+
 ## Hardware Overview
 
-An RFID gate consists of an **antenna assembly** and a detachable **controller unit**.
+An RFID gate consists of an **antenna assembly** and a detachable **controller unit**. It is designed to scan [Sparkfun UHF RFID tags](https://www.sparkfun.com/products/20228).
 
 ### Antenna Assembly
 
