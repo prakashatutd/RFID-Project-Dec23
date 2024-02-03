@@ -2,6 +2,10 @@
 
 This directory contains the source code for the inventory control system (ICS) back-end and web dashboard.
 
+1. [Building](#building)
+2. [Development](#development)
+3. [Containerized deployment](#containerized-deployment)
+
 ## Building
 
 ### Prerequisites
@@ -46,22 +50,22 @@ Use Ctrl-C to stop the server.
 
 We use [Flutter](https://flutter.dev/) for the front-end and [Django](https://www.djangoproject.com/) with the [REST framework](https://www.django-rest-framework.org/) for the back-end. It is recommended to complete, at a minimum, (most of) the [Django tutorial](https://docs.djangoproject.com/en/5.0/intro/tutorial01/) and [REST framework tutorial](https://www.django-rest-framework.org/tutorial/1-serialization/) before beginning development.
 
-### Code Structure
+### Code structure
 
 ```
-server
-├── dashboard
-│   ├── build
-|   |   └── web
-│   ├── lib
-│   ├── test
-│   └── web
+server/
+├── dashboard/
+│   ├── build/
+|   |   └── web/
+│   ├── lib/
+│   ├── test/
+│   └── web/
 ├── dockerfile
-└── ics
-    ├── dashboard
-    ├── ics
+└── ics/
+    ├── dashboard/
+    ├── ics/
     ├── manage.py
-    └── media
+    └── media/
 ```
 
 #### Flutter project

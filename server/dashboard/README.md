@@ -1,16 +1,28 @@
-# rfid_dashboard
+# Web dashboard
 
-A new Flutter project.
+This directory contains the web dashboard Flutter project.
 
-## Getting Started
+## Data flow
 
-This project is a starting point for a Flutter application.
+<img src="./images/DashboardDataFlow.png" />
 
-A few resources to get you started if this is your first Flutter project:
+## Code structure
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+The `build/web` directory contains the project build output (served by the Django app) and the `lib` directory contains the actual source code.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+lib/
+├── common/
+├── data_sources/
+├── models/
+├── pages/
+├── api.dart
+└── main.dart
+```
+
+- `common` contains common widgets shared across multiple pages
+- `data_sources` contains table data sources
+- `models` contains Dart classes corresponding to the data models returned by the back-end REST API
+- `pages` contains the web dashboard pages
+- `api.dart` contains the wrapper used to access the back-end REST API
+- `main.dart` contains the main app entry point and UI elements displayed on all pages (app bar, navigation rail, menu bar)
