@@ -1,69 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-import 'api.dart';
-import 'common.dart';
-import 'data_definitions.dart';
-
-class ScanHistoryDataSource extends AsyncDataTableSource {
-  ListQueryParameters _queryParameters = ListQueryParameters();
-  InventoryControlSystemAPI _api;
-  bool _sortActionAscending = true;
-
-  ScanHistoryDataSource(this._api);
-
-  void filterByCategory(String category) {
-    _queryParameters.category = category;
-    refreshDatasource();
-  }
-
-  void sortBy(String field, bool ascending) {
-    if (field == 'action') {
-      _sortActionAscending = ascending;
-    } else {
-      if (!ascending) {
-        _queryParameters.ordering = '-' + field;
-      } else {
-        _queryParameters.ordering = field;
-      }
-    }
-    refreshDatasource();
-  }
-
-  void searchByName(String name) {
-    _queryParameters.search = name;
-    refreshDatasource();
-  }
-
-  @override
-  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
-    _queryParameters.offset = startIndex;
-    _queryParameters.limit = count;
-
-    ListResponse<ScanEvent> scanEvents = await _api.getScanEvents(_queryParameters);
-
-    if (_sortActionAscending) {
-      scanEvents.results.sort((a, b) => a.action.compareTo(b.action));
-    } else {
-      scanEvents.results.sort((a, b) => b.action.compareTo(a.action));
-    }
-
-    return AsyncRowsResponse(
-      scanEvents.totalCount,
-      List<DataRow>.from(scanEvents.results.map((ScanEvent scanEvent) =>
-          DataRow(
-            cells: <DataCell>[
-              DataCell(Text(scanEvent.scanTime.toString())),
-              DataCell(Text(scanEvent.gateId)),
-              DataCell(Text(scanEvent.productName)),
-              DataCell(Text(scanEvent.action.toString())),
-              DataCell(Text(scanEvent.quantity.toString())),
-            ],
-          ),
-      )),
-    );
-  }
-}
+import '../api.dart';
+import '../common/error_retry_box.dart';
+import '../data_sources/scan_history_data_source.dart';
+import '../models/scan_event.dart';
 
 class ScanHistoryPage extends StatefulWidget {
   final InventoryControlSystemAPI _api;
@@ -77,7 +18,7 @@ class ScanHistoryPage extends StatefulWidget {
 class _ScanHistoryPageState extends State<ScanHistoryPage> {
   int _rowsPerPage = 10;
   ScanHistoryDataSource _dataSource;
-  int _sortColumnIndex = 0; // scan time
+  int _sortColumnIndex = 0; // Default sort column is 'Scan time'
   bool _sortAscending = true;
 
   _ScanHistoryPageState(this._dataSource);
@@ -155,13 +96,11 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           ),
           DataColumn2(
             label: Text('Action'),
-            size: ColumnSize.M,
-           
+            size: ColumnSize.M,           
           ),
           DataColumn2(
             label: Text('Quantity'),
-            size: ColumnSize.S,
-        
+            size: ColumnSize.S,        
             numeric: true,
           ),
         ],

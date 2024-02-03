@@ -1,29 +1,3 @@
-// Data objects that are returned by the back-end API
-// These are initialized by deserialized JSON data
-
-class Product {
-  final int id;
-  final String name;
-  final String category;
-  final int reorderPoint;
-  int quantity;
-
-  Product(
-    this.id,
-    this.name,
-    this.category,
-    this.reorderPoint,
-    this.quantity
-  );
-
-  Product.fromJson(Map<String, dynamic> json)
-    : id           = json['id']       as int,
-      name         = json['name']     as String,
-      category     = json['category'] as String,
-      reorderPoint = json['rop']      as int,
-      quantity     = json['quantity'] as int;
-}
-
 enum ScanAction {
   Receive,
   Dispatch,

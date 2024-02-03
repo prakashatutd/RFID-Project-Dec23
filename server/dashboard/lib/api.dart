@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
-import 'data_definitions.dart';
+import 'models/product.dart';
+import 'models/scan_event.dart';
 
 // Main entry point into the back-end API
 class InventoryControlSystemAPI {

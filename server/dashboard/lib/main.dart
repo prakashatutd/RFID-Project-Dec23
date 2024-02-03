@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'api.dart';
-import 'inventory_page.dart';
-import 'trends_page.dart';
-import 'orders_page.dart';
-import 'scan_history_page.dart';
+import 'pages/inventory_page.dart';
+import 'pages/trends_page.dart';
+import 'pages/orders_page.dart';
+import 'pages/scan_history_page.dart';
 
 class _DashboardPage {
   final String name;

@@ -1,79 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-import 'api.dart';
-import 'common.dart';
-import 'data_definitions.dart';
-
-// Additional product info that is shown in pop-up (unused)
-class ProductDetailedInfo {
-  final String imageUrl;
-  final String description;
-  final int width;
-  final int height;
-  final int depth;
-  final int weight;
-
-  ProductDetailedInfo(
-    this.imageUrl,
-    this.description,
-    this.width,
-    this.height,
-    this.depth,
-    this.weight) {
-  }
-}
-
-class InventoryDataSource extends AsyncDataTableSource {
-  ListQueryParameters _queryParameters = ListQueryParameters();
-  InventoryControlSystemAPI _api;
-
-  InventoryDataSource(this._api);
-
-  void filterByCategory(String category) {
-    _queryParameters.category = category;
-    refreshDatasource();
-  }
-
-  void sortBy(String field, bool ascending) {
-    if (!ascending)
-      _queryParameters.ordering = '-' + field;
-    else
-      _queryParameters.ordering = field;
-    refreshDatasource();
-  }
-
-  void searchByName(String name) {
-    _queryParameters.search = name;
-    refreshDatasource();
-  }
-
-  @override
-  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
-    _queryParameters.offset = startIndex;
-    _queryParameters.limit = count;
-    ListResponse<Product> products = await _api.getProducts(_queryParameters);
-        List<DataRow> dataRows = products.results.map((Product product) {
-      bool highlightRed = product.quantity < product.reorderPoint;
-
-      return DataRow(
-        color: highlightRed ? MaterialStateColor.resolveWith((Set<MaterialState> states) => Colors.red) : null,
-        cells: <DataCell>[
-          DataCell(Text(product.id.toString())),
-          DataCell(Text(product.name)),
-          DataCell(Text(product.category)),
-          DataCell(Text(product.reorderPoint.toString())),
-          DataCell(Text(product.quantity.toString())),
-        ],
-      );
-    }).toList();
-
-    return AsyncRowsResponse(
-      products.totalCount,
-      List<DataRow>.from(dataRows),
-    );
-  }
-  }
+import '../api.dart';
+import '../common/error_retry_box.dart';
+import '../data_sources/inventory_data_source.dart';
+import '../models/product.dart';
 
 class InventoryPage extends StatefulWidget {
   final InventoryControlSystemAPI _api;
@@ -87,7 +18,7 @@ class InventoryPage extends StatefulWidget {
 class _InventoryPageState extends State<InventoryPage> {
   int _rowsPerPage = 10;
   InventoryDataSource _dataSource;
-  int _sortColumnIndex = 2; // category by default
+  int _sortColumnIndex = 2; // Default sort column is 'Category'
   bool _sortAscending = true;
 
   _InventoryPageState(this._dataSource);
