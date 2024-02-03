@@ -1,12 +1,16 @@
-# RFID Gate
+# RFID gate
 
-This directory contains the RFID gate firmware.
+This directory contains the RFID gate firmware source code.
 
-## Hardware Overview
+1. [Hardware overview](#hardware-overview)
+2. [Firmware development](#firmware-development)
+3. [Resources](#resources)
+
+## Hardware overview
 
 An RFID gate consists of an **antenna assembly** and a detachable **controller unit**. It is designed to scan [Sparkfun UHF RFID tags](https://www.sparkfun.com/products/20228).
 
-### Antenna Assembly
+### Antenna assembly
 
 We use a Sparkfun [UHF RFID antenna](https://www.sparkfun.com/products/14131) mounted on a PVC pipe stand. It has a reliable read range of about one meter at 27 dBi (max power).
 
@@ -27,7 +31,7 @@ To attach the controller to the antenna assembly:
 1. Carefully slot the controller into the plastic holder on the side of the stand, making sure that the end with the coax cable is pointing upwards. Push down on the *edges* of the Arduino (avoid pushing the SRTR) until the controller is firmly attached.
 2. Screw the RP-SMA connectors together. Be careful with the U.FL to RP-SMA cable because it is fragile.
 
-## Firmware Development
+## Firmware development
 
 #### Prerequisites
 
@@ -37,7 +41,7 @@ To attach the controller to the antenna assembly:
 #### Notes
 
 - The SRTR uses the ThingMagic M6E-Nano as its embedded RFID module. The Nano's API implementation is proprietary and the SRTR Arduino library is Sparkfun's *incomplete* attempt at reverse engineering it. Some library functions are incomplete and some function in an unexpected manner. Consulting the library's source code is necessary for making use of all but the most basic of the SRTR's capabilities.
-- The "Arduino programming language" is just C++ with the Arduino library (`Arduino.h`). However, because Arduino boards typically have limited memory, they do not support the C++ standard library. Some of the C standard libraries may be supported.
+- The "Arduino programming language" is just C++ with the Arduino library (`Arduino.h`). However, like many MCUs, Arduino boards have limited memory and do not support the C++ standard libraries. Some of the C standard libraries may be supported.
 
 ## Resources
 

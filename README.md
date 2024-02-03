@@ -64,5 +64,3 @@ Currently, the project has implemented the following functionality:
 - Convert web dashboard to mobile app
 - Possibly move to a cloud hosting service (e.g. AWS or GCP)
 
-### 
-
